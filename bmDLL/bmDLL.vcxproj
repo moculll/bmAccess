@@ -1,0 +1,919 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{fcb07537-40a5-46b5-9e12-f9621012ce5b}</ProjectGuid>
+    <RootNamespace>bmDLL</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;BMDLL_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;BMDLL_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;BMDLL_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>./Minhook;../SDK;../MocIPC;./dataMgr;../common;./;../spdlog/include</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <DisableSpecificWarnings>
+      </DisableSpecificWarnings>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <AdditionalDependencies>$(CoreLibraryDependencies);%(AdditionalDependencies);</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;BMDLL_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\common\common.h" />
+    <ClInclude Include="..\MocIPC\mocIPC.h" />
+    <ClInclude Include="..\SDK\PropertyFixup.hpp" />
+    <ClInclude Include="..\SDK\SDK.hpp" />
+    <ClInclude Include="..\SDK\SDK\Abp_ModularMeshCS_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\Abp_ModularMeshCS_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\Abp_ModularMeshCS_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Abp_sts_dao_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\Abp_sts_dao_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\ABP_wukong_head_lingzhi_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\ABP_wukong_head_lingzhi_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\ACLPlugin_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\ACLPlugin_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\ACLPlugin_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\ActorLayerUtilities_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\ActorLayerUtilities_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\ActorLayerUtilities_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\ActorSequence_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\ActorSequence_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\AIModule_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\AIModule_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\AIModule_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\AkAudio_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\AkAudio_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\AkAudio_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\AndroidFileServer_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\AndroidFileServer_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\AndroidFileServer_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\AndroidPermission_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\AndroidPermission_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\AnimationCore_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\AnimationCore_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\AnimationLocomotionLibraryRuntime_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\AnimationLocomotionLibraryRuntime_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\AnimationSharing_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\AnimationSharing_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\AnimationSharing_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\AnimationWarpingRuntime_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\AnimGraphRuntime_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\AnimGraphRuntime_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\AnimGraphRuntime_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\AnimToTexture_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\AnimToTexture_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\AnimToTexture_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\AO_Parameters_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\ApexDestruction_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\ApexDestruction_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\ApexDestruction_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\AppleImageUtils_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\AppleImageUtils_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\AppleImageUtils_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Arteries_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\Arteries_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\Arteries_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\AssetRegistry_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\AssetRegistry_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\AssetRegistry_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\AssetTags_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\AssetTags_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\AssetTags_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\AsyncLoadingScreen_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\AsyncLoadingScreen_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\AudioAnalyzer_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\AudioAnalyzer_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\AudioCapture_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\AudioCapture_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\AudioCapture_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\AudioExtensions_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\AudioExtensions_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\AudioExtensions_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\AudioLinkCore_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\AudioLinkEngine_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\AudioLinkEngine_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\AudioMixer_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\AudioMixer_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\AudioMixer_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\AudioPlatformConfiguration_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\AudioSynesthesia_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\AudioSynesthesia_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\AudioSynesthesia_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\AugmentedReality_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\AugmentedReality_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\AugmentedReality_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\AutomationUtils_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\AutomationUtils_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\AvfMediaFactory_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\b1MinusManaged_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\b1MinusManaged_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\b1MinusManaged_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\b1_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\b1_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\b1_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Basic.hpp" />
+    <ClInclude Include="..\SDK\SDK\BinkMediaPlayer_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BinkMediaPlayer_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BinkMediaPlayer_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_AgeTips_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_AgeTips_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_ArrowRoleAttr_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_AttrBase_V2_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_AttrBase_V2_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_BattleEnd_Action_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_CommIconTab_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_CommSubTab_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_CommTxtTab_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_CommTxtTab_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_ComplexSecRoleAttr_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_ComplexSecRoleAttr_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_CostItemKey_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_CostItemKey_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_CostItem_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_CostItem_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_DetailLongPress_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_DetailPageSwitcher_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_DetailPageSwitcher_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_EffectDesc_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_EquipDetailCompare_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_EquipDetailCompare_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_EquipDetail_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_EquipDetail_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_EquipItem_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_EquipItem_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_EquipItem_RZDSlot_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_EquipItem_RZDSlot_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_EquipItem_Slot_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_EquipItem_Slot_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_EquipQuickSlot_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_FirstStartBtn_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_FirstStartBtn_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_GearDetailBg_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_GearDetailBg_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_GearItem_Slot_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_GearItem_Slot_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_GearItem_Tab_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_GearItem_Tab_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_HuluDetail_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_HuluDetail_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_InputOne_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_InputRoot_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_InventoryItem_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_InventoryItem_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_ItemStory_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_ItemStory_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_JewelryDetail_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_JewelrySlotDetail_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_Line_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_Loading_Item_Name_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_Loading_Item_Name_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_QuickItem_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_QuickItem_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_RoleAttr_V3_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_RoleAttr_V3_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_RoleLevel_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_RoleLevel_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_RoleTab_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_RZDDetailItem_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_RZDDetail_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_RZDDetail_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_ScrollBoxNew_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_ScrollBoxNew_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_ScrollInputTips_WithComb_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_SecRoleAttrFold_V3_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_SecRoleAttrFold_V3_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_SecRoleAttrUnfold_V3_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_SecRoleAttrUnfold_V3_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_SoakDesc_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_Sorting_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_Sorting_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_SplitLine_V2_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_SplitLine_V2_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_StartGame_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_StartGame_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_SubTabJewelry_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_SuitDesc_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_SuitSPDesc_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_SuitSPDesc_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_TextLoop_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_TileView_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_TileView_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_TreasureDetailItem_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_TreasureDetail_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_TreasureDetail_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_TreasureEqDesc_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_UIFXDetailForged_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BI_UIFXDetailForged_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_B1PlayerCameraManager_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_B1PlayerController_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_B1PlayerState_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_CameraActor_ForSeq_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_CameraCinematic_ForSeq_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_CameraCrane_ForSeq_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_CameraRail_ForSeq_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_DispLibWorld_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_DropItemActorBase_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_DropItem_BaiYiSpear_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_DropItem_BaiYiSpear_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_DropItem_Longdage_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_DropItem_Longdage_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_DropItem_Mo124_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_DropItem_Mo3_new_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_DropItem_RedTides_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_DropItem_RedTides_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_DropItem_ShuangTouShu_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_DropItem_ShuangTouShu_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_DropItem_Soul_Blue_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_DropItem_Soul_Purple_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_GameMode_SetConfig_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_GMActor_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_GMActor_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_gs_rt_quality_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_gs_rt_quality_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_Normal_RichTextZhuYi_DC_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_Normal_RichTextZhuYi_DC_EquipMainSubTitle_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_Player_Wukong_Atk_Feilonggun_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_Player_Wukong_Atk_jiachongwang_01_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_Player_Wukong_Atk_jiachongwang_02_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_Player_Wukong_Atk_jiachongwang_03_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_Player_Wukong_Atk_jiachongwang_04_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_Player_Wukong_Atk_q5_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_Player_Wukong_Atk_yechawang_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_player_wukong_fenshen_atktbuff_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_player_wukong_jxsq_heifeng_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_Player_Wukong_KangJinLong_Lightning_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_player_wukong_lava_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_Player_Wukong_PiHuoZhao_01_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_Player_Wukong_PiHuoZhao_01_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_player_wukong_precisedodge_bullet2_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_player_wukong_precisedodge_bullet_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_Player_Wukong_SanJianLiangRen_02_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_Player_Wukong_SanJianLiangRen_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_RTX_Parameter_Interface_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_RTX_Parameter_Interface_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_RT_Quality_Parameters_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_RT_Quality_Parameters_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_SkillSelectHelper_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_StartupGameMode_V2_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_UI_Character_ShowGroup_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_UI_CommErrorTips_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_UI_Debug_RT_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_UI_ExceptionPanel_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_UI_ExceptionPanel_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_UI_GMBtn_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_UI_GMDefaultPanel_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_UI_GMDefaultPanel_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_UI_GMInfoPartInfo_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_UI_GMInfoUnit_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_UI_GMInfo_Enemy_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_UI_GMInfo_Enemy_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_UI_GMInfo_Player_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_UI_GMInfo_Player_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_UI_GMSettingBase_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_UI_GMSettingCharacterConfig_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_UI_GMSettingCheck_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_UI_GMSettingCheck_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_UI_GMSettingEditable_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_UI_GMSettingSlider_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_UI_GMSettingSlider_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_UI_OP_Check_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_UI_OP_Check_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_UI_OP_Editable_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_UI_OP_Editable_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_UI_OP_Slider_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_UI_OP_Slider_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_wukong_bajiaoshan_tornado_bullet_big_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_wukong_xiuhuazhen_bullet_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BP_wukong_xiuhuazhen_bymj_bullet_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BuildPatchServices_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BuildPatchServices_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\BUI_AnimShowBlock_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BUI_B1_Root_V2_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BUI_B1_Root_V2_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BUI_EquipMain_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BUI_EquipMain_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BUI_LoadingV2_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BUI_Name_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BUI_RoleMain_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BUI_RoleMain_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BUI_StartGameManaged_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BUI_StartGameManaged_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\BUI_StartGame_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\BUI_StartGame_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\CableComponent_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\CableComponent_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\CalliopeWin64_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\CalliopeWin64_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\Calliope_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\Calliope_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\Calliope_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\ChaosCloth_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\ChaosCloth_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\ChaosCloth_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\ChaosNiagara_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\ChaosNiagara_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\ChaosSolverEngine_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\ChaosSolverEngine_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\ChaosSolverEngine_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Chaos_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\CinematicCamera_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\CinematicCamera_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\CinematicCamera_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\CinematicPrestreaming_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\CinematicPrestreaming_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\CinematicPrestreaming_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\ClothingSystemRuntimeCommon_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\ClothingSystemRuntimeCommon_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\ClothingSystemRuntimeInterface_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\ClothingSystemRuntimeInterface_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\ClothingSystemRuntimeInterface_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\ClothingSystemRuntimeNv_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\ClothingSystemRuntimeNv_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\ClothingSystemRuntimeNv_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\ConsoleVariableManager_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\ConsoleVariableManager_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\ConstructionSystemRuntime_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\ConstructionSystemRuntime_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\ConstructionSystemRuntime_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\ControlRigSpline_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\ControlRig_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\ControlRig_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\ControlRig_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\CoreOnline_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\CoreUObject_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\CoreUObject_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\CoreUObject_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\CS_FTXD_Z1_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\CS_wukong_tttb_success_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\CustomLightSystem_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\CustomLightSystem_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\CustomLightSystem_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\CustomMeshComponent_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\CustomMeshComponent_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\CustomMeshComponent_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\DatasmithContent_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\DatasmithContent_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\DatasmithContent_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\DataType_Support_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Debug_Parameters_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\DeveloperSettings_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\DeveloperSettings_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Disable_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\DLSSBlueprint_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\DLSSBlueprint_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\DLSSBlueprint_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\DLSS_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\DLSS_Parameters_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\DLSS_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\DmgTypeBP_Environmental_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\DonAINavigation_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\DonAINavigation_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\DonAINavigation_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\DownloadTookit_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\DownloadTookit_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\DownloadTookit_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\DynamicSDFGeneratorV2_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\DynamicSDFGenerator_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\EngineMessages_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\EngineSettings_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\EngineSettings_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\EngineSettings_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Engine_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\Engine_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\Engine_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\EnhancedInput_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\EnhancedInput_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\EnhancedInput_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Enum_RT_Quality_Preset_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\EQC_PlayerContext_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\EQC_PlayerContext_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\EQG_simpleteleport_donut_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\EQG_simpleteleport_grid_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\EyeTracker_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\EyeTracker_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\EyeTracker_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\FacialAnimation_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\FFXFSR3Settings_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\FFXFSR3Settings_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\FieldSystemEngine_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\FieldSystemEngine_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\FieldSystemEngine_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Film_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Foliage_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\Foliage_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\Foliage_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\FullBodyIK_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\GameplayCameras_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\GameplayCameras_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\GameplayCameras_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\GameplayTags_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\GameplayTags_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\GameplayTags_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\GameplayTasks_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\GameplayTasks_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\GameplayTasks_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\GeometryCacheTracks_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\GeometryCacheTracks_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\GeometryCache_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\GeometryCache_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\GeometryCache_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\GeometryCollectionEngine_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\GeometryCollectionEngine_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\GeometryCollectionEngine_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\GeometryCollectionTracks_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\GeometryCollectionTracks_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\GeometryFramework_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\GeometryFramework_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\GeometryFramework_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\GeometryScriptingCore_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\GeometryScriptingCore_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\GeometryScriptingCore_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\GI_Parameters_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\GooglePAD_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\GooglePAD_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\GooglePAD_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\GSAnimationKeyBlender_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\GSAnimationKeyBlender_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\GSAnimationKeyBlender_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\GSDataShare_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\GSDataShare_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\GSDynamicSDF_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\GSEArteries_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\GSEArteries_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\GSEArteries_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\GSEMinusProtobufDB_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\GSEngineExtent_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\GSEngineExtent_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\GSEngineExtent_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\GSE_FireEmitterSystem_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\GSE_FireEmitterSystem_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\GSE_FireSystem_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\GSE_FireSystem_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\GSE_Fire_RTQuene_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\GSFileHelper_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\GSFileHelper_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\GSGameSettings_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\GSInput_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\GSInput_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\GSInput_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\GSNiagara_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\GSNiagara_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\GSNiagara_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\GSReplaySystem_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\GSReplaySystem_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\GSSlateUtils_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\GSSlateUtils_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\GSUMGExt_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\GSUMGExt_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\GSUMGExt_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\HairStrandsCore_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\HairStrandsCore_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\HairStrandsCore_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\HeadMountedDisplay_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\HeadMountedDisplay_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\HeadMountedDisplay_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Hephaestus_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\High_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Hotfix_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\Hotfix_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\HoudiniEngineRuntime_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\HoudiniEngineRuntime_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\HoudiniEngineRuntime_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\IKRig_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\IKRig_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\IKRig_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\ImageWriteQueue_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\ImageWriteQueue_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\ImageWriteQueue_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\ImArtDev_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\ImgMediaEngine_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\ImgMediaFactory_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\ImgMedia_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\ImgMedia_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\ImgMedia_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\InputCore_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\InputCore_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\InteractiveToolsFramework_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\InteractiveToolsFramework_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\InteractiveToolsFramework_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\JavascriptHttp_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\JavascriptHttp_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\JavascriptHttp_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\JavascriptUMG_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\JavascriptUMG_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\JavascriptUMG_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\JavascriptWebSocket_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\JavascriptWebSocket_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\JsonUtilities_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\JsonUtilities_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Landmass_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\LandscapeAndFoliage_Parameter_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Landscape_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\Landscape_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\Landscape_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\LevelSequence_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\LevelSequence_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\LevelSequence_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Lobby_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\Lobby_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\Lobby_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\LocationServicesBPLibrary_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\LocationServicesBPLibrary_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\LocationServicesBPLibrary_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Low_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Lumen_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\MaterialShaderQualitySettings_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\MaterialShaderQualitySettings_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\MediaAssets_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\MediaAssets_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\MediaAssets_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\MediaCompositing_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\MediaCompositing_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\MediaPlayerTest_UMG_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\MediaPlayerTest_UMG_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\MediaUtils_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Medium_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\MeshDescription_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\MeshDescription_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\MeshDescription_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\MeshModelingToolsExp_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\MeshModelingToolsExp_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\MeshModelingToolsExp_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\MeshModelingTools_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\MeshModelingTools_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\MeshModelingTools_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Mesh_Caustics_Parameters_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\MM_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\MM_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\MM_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\MobilePatchingUtils_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\MobilePatchingUtils_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\ModelingComponents_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\ModelingComponents_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\ModelingComponents_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\ModelingOperators_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\ModelingOperators_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\MoviePlayer_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\MoviePlayer_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\MovieRenderPipelineCore_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\MovieRenderPipelineCore_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\MovieRenderPipelineCore_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\MovieRenderPipelineRenderPasses_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\MovieRenderPipelineRenderPasses_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\MovieRenderPipelineSettings_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\MovieRenderPipelineSettings_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\MovieSceneCapture_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\MovieSceneCapture_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\MovieSceneCapture_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\MovieSceneTracks_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\MovieSceneTracks_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\MovieSceneTracks_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\MovieScene_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\MovieScene_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\MovieScene_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\MRMesh_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\MRMesh_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\MRMesh_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\NavigationSystem_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\NavigationSystem_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\NavigationSystem_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\NetCore_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\NetCore_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\NiagaraAnimNotifies_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\NiagaraAnimNotifies_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\NiagaraAnimNotifies_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\NiagaraCore_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\NiagaraCore_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\NiagaraShader_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\NiagaraShader_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\NiagaraTickManager_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\NiagaraTickManager_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\NiagaraUIRenderer_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\NiagaraUIRenderer_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\NiagaraUIRenderer_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Niagara_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\Niagara_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\Niagara_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\OnlineSubsystemEOS_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\OnlineSubsystemEOS_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\OnlineSubsystemSteam_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\OnlineSubsystemUtils_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\OnlineSubsystemUtils_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\OnlineSubsystemUtils_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\OnlineSubsystem_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\OnlineSubsystem_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\OnlineSubsystem_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\OodleNetworkHandlerComponent_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\OodleNetworkHandlerComponent_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\OpacityMicroMap_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\OpacityMicroMap_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\OpacityMicroMap_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\OpenColorIO_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\OpenColorIO_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\OpenColorIO_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\OSC_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\OSC_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\OSC_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Overlay_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\Overlay_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\PacketHandler_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\Paper2D_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\Paper2D_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\Paper2D_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Party_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\Party_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\PBIK_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\PCG_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\PCG_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\PCG_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\PhysicsCore_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\PhysicsCore_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\PrefabricatorRuntime_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\PrefabricatorRuntime_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\PrefabricatorRuntime_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\ProceduralMeshComponent_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\ProceduralMeshComponent_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\ProceduralMeshComponent_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\PropertyPath_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\ProtobufMinusRunTime_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\PS5_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Qos_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\Qos_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\Qos_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Reflection_Parameters_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Rejoin_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\Rejoin_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Renderer_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\Renderer_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\ReplicationGraph_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\ReplicationGraph_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\ReplicationGraph_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\ResonanceAudio_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\ResonanceAudio_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\ResonanceAudio_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\RigVM_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\RigVM_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\RigVM_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\RTXDI_NRD_Parameters_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\RTXDI_Quality_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\RTX_PostProcess_Settings_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\RT_Parameters_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\SequencerScripting_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\SequencerScripting_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\SequencerScripting_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Serialization_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\SessionMessages_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Shadow_Parameters_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\SignificanceManager_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\SimpleCharts_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\SimpleCharts_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\SimpleCharts_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\SkeletalMerging_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\SkeletalMerging_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\SkeletalMerging_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\SkyLight_Parameters_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\SlateCore_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\SlateCore_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Slate_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\Slate_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\SocketSubsystemEOS_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\SoundFields_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\SpiderNavigation_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\SpiderNavigation_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\SpiderNavigation_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Startup_V2_P_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\Startup_V2_P_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\StaticMeshDescription_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\StaticMeshDescription_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\StaticMeshDescription_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\StreamlineBlueprint_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\StreamlineBlueprint_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\StreamlineBlueprint_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\StreamlineRHI_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\StreamlineRHI_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\StructUtils_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\SubstanceCore_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\SubstanceCore_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\SubstanceCore_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Synthesis_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\Synthesis_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\Synthesis_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\TcpMessaging_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\TemplateSequence_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\TemplateSequence_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\TemplateSequence_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\TexAlphaDA_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\TimeManagement_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\TimeManagement_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\TimeManagement_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Transient_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Translucency_Parameters_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\TressFX_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\TressFX_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\TressFX_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\TypedElementFramework_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\TypedElementFramework_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\TypedElementFramework_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\TypedElementRuntime_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\TypedElementRuntime_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\TypedElementRuntime_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\UdpMessaging_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\UdpMessaging_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\UMGSpline_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\UMGSpline_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\UMGSpline_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\UMG_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\UMG_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\UMG_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\UnrealExtent_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\UnrealExtent_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\UnrealExtent_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\UObjectPlugin_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\UObjectPlugin_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\USharp_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\USharp_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\V8_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\V8_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\V8_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\VariantManagerContent_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\VariantManagerContent_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\VariantManagerContent_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\VectorVM_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\VeryHigh_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\VirtualHeightfieldMesh_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\VirtualHeightfieldMesh_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\Water_Caustics_Parameters_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Water_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\Water_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\Water_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\WebBrowserWidget_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\WebBrowserWidget_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\WebBrowser_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\WmfMediaFactory_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\WwiseFileHandler_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\WwiseFileHandler_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\WwiseFileHandler_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\WwiseObjectUtils_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\WwiseResourceLoader_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\WwiseResourceLoader_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\WwiseResourceLoader_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\WwiseSimpleExternalSource_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\WwiseSimpleExternalSource_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\Xbox_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\XeSSBlueprint_classes.hpp" />
+    <ClInclude Include="..\SDK\SDK\XeSSBlueprint_parameters.hpp" />
+    <ClInclude Include="..\SDK\SDK\XeSSBlueprint_structs.hpp" />
+    <ClInclude Include="..\SDK\SDK\XeSSPlugin_classes.hpp" />
+    <ClInclude Include="..\SDK\UnrealContainers.hpp" />
+    <ClInclude Include="dataMgr\dataMgr.h" />
+    <ClInclude Include="framework.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\SDK\SDK\b1MinusManaged_functions.cpp" />
+    <ClCompile Include="..\SDK\SDK\b1_functions.cpp" />
+    <ClCompile Include="..\SDK\SDK\Basic.cpp" />
+    <ClCompile Include="..\SDK\SDK\CoreUObject_functions.cpp" />
+    <ClCompile Include="..\SDK\SDK\Engine_functions.cpp" />
+    <ClCompile Include="..\SDK\SDK\GSInput_functions.cpp" />
+    <ClCompile Include="..\SDK\SDK\UMG_functions.cpp" />
+    <ClCompile Include="..\SDK\SDK\UnrealExtent_functions.cpp" />
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="Minhook\src\buffer.c" />
+    <ClCompile Include="Minhook\src\HDE\hde32.c" />
+    <ClCompile Include="Minhook\src\HDE\hde64.c" />
+    <ClCompile Include="Minhook\src\hook.c" />
+    <ClCompile Include="Minhook\src\trampoline.c" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -1,0 +1,6 @@
+[submodule "MocIPC"]
+	path = MocIPC
+	url = https://github.com/moculll/MocIPC.git
+[submodule "spdlog"]
+	path = spdlog
+	url = https://github.com/gabime/spdlog.git
