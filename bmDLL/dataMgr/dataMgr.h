@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <windows.h>
 #include <Psapi.h>
 #include <future>
@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 #include <unordered_set>
+#include <string.h>
 #pragma warning(push)
 #pragma warning(disable: 4267)
 
@@ -143,7 +144,7 @@ struct blackMyth {
 	inline static SDKMgr sdkMgr;
 	inline static char loggerBuffer[512];
 	inline static std::vector<std::wstring> textQueue;
-
+	inline static std::map<std::string, int> mMap;
 
 	using fn = void(__thiscall*)(SDK::UGameViewportClient*, SDK::UObject*);
 	using pevent_fn = void(__thiscall*)(SDK::UObject*, SDK::UObject*, void* params);
@@ -374,7 +375,7 @@ struct blackMyth {
 			param = (param_t*)params;
 
 			SDK::ACharacter* playerCharacter = param->character;
-
+			SDK::UGameplayStatics* GameplayStatics = sdkMgr.get<SDK::UGameplayStatics*>("GameplayStatics");
 			if (!playerCharacter) {
 				sdkMgr.registPtr("playerCharacter", nullptr);
 				return;
@@ -399,7 +400,27 @@ struct blackMyth {
 			/*DEBUG_PRINT("hp: %.0f, mp: %.0f, Stamina: %.0f, recover: %.0f, freeze: %.0f, burn: %.0f, posion: %.0f, thunder: %.0f, bloodButton: %.0f, energy: %.0f", playerHp, playerMp, playerStamina, playerStaminaRecover, playerFreeze, playerBurn, playerPoison, \
 				playerThunder, playerBloodButton, playerEnergy);*/
 
-			/*memset(&CommonData::infoBuffer, 0, sizeof(CommonData::infoBuffer));*/
+			std::string currentLevelName(GameplayStatics->GetCurrentLevelName(param->WorldContextObject, false).ToString());
+			
+			
+			
+			int levelId = 0;
+			auto mapContainer = mMap.find(currentLevelName);
+			if (mapContainer != mMap.end()) {
+				levelId = mapContainer->second;
+			}
+			/* DEBUG_PRINT("current level: %s, id: %d", currentLevelName.c_str(), levelId); */
+
+			CommonData::levelInfoBuffer.event = CommonData::event_t::EVENT_LEVELINFO;
+			CommonData::levelInfoBuffer.levelInfo.levelId = levelId;
+			
+			
+			/* SDK::UGSE_WorldFuncLib *worldfunclib = sdkMgr.get<SDK::UGSE_WorldFuncLib*>("WorldFuncLib"); */
+
+			
+			/* DEBUG_PRINT("current levelName: %s", (SDK::UWorld::GetWorld())->PersistentLevel->Outer->GetName().c_str()); */
+			
+
 			CommonData::infoBuffer.event = CommonData::event_t::EVENT_PLAYER_INFO;
 			CommonData::infoBuffer.playerInfo = { playerHp , playerMp , playerFreeze , playerBurn , playerPoison , playerThunder , playerBloodButton , playerEnergy , playerStamina , playerStaminaRecover };
 
@@ -527,8 +548,7 @@ struct blackMyth {
 
     blackMyth()
     {
-
-
+		
     }
 
 	bool deinit()
@@ -574,7 +594,7 @@ struct blackMyth {
 		}
 		else {
 			DEBUG_PRINT("Offsets: GObjects: Pattern scan failed.");
-			
+			return false;
 		}
 
 		/* necessary for SDK register */
@@ -629,10 +649,28 @@ struct blackMyth {
 		sdkMgr.registPtr("UMGLib", reinterpret_cast<void*>(SDK::UGSE_UMGFuncLib::GetDefaultObj()));
 		sdkMgr.registPtr("KismetLib", reinterpret_cast<void*>(SDK::UKismetTextLibrary::GetDefaultObj()));
 		sdkMgr.registPtr("BGULib", reinterpret_cast<void*>(SDK::UBGUFunctionLibraryCS::GetDefaultObj()));
+		sdkMgr.registPtr("GameplayStatics", reinterpret_cast<void*>(SDK::UGameplayStatics::GetDefaultObj()));
+		sdkMgr.registPtr("WorldFuncLib", reinterpret_cast<void*>(SDK::UGSE_WorldFuncLib::GetDefaultObj()));
 
 		/*process_event_addr = SDK::UWorld::GetWorld()->GetProcessEventAddr();
 		DEBUG_PRINT("processEventAddr: %llx", process_event_addr);*/
+		mMap.insert(std::pair<std::string, int>("LYS_paintingworld_01", 31));               // 如意画轴-六六村
+		mMap.insert(std::pair<std::string, int>("HFS01_PersistentLevel", 10));               // 黑风山
+		mMap.insert(std::pair<std::string, int>("HFS01_Old_GYCY_YKX_PersistentLevel", 11));  // 隐·旧观音禅院
+		mMap.insert(std::pair<std::string, int>("HFS_WoodDragon", 12));                      // 黑风山-尺木间
+		mMap.insert(std::pair<std::string, int>("HFM02_PersistentLevel", 20));               // 黄风岭
+		mMap.insert(std::pair<std::string, int>("HFM_DuJiaoXian_Persist", 25));              // 隐·斯哈里国
+		mMap.insert(std::pair<std::string, int>("HFM_DustDragon_01", 24));                  // 黄风岭-藏龙洞
+		mMap.insert(std::pair<std::string, int>("LYS_PersistentLevel", 30));                 // 小西天
+		mMap.insert(std::pair<std::string, int>("PSD_PersistentLevel", 40));                 // 盘丝岭
+		mMap.insert(std::pair<std::string, int>("ZYS01_persistentlevel", 80));               // 隐·紫云山
+		mMap.insert(std::pair<std::string, int>("HYS_PersistentLevel", 50));                 // 火焰山
+		mMap.insert(std::pair<std::string, int>("BYS_persistentlevel", 98));                 // 花果山
+		mMap.insert(std::pair<std::string, int>("BSD02_persistentlevel", 70));               // 隐·壁水洞
 
+		for (auto &it : mMap) {
+			DEBUG_PRINT("added [%s]:[%d] to mMap", it.first.c_str(), it.second);
+		}
 
 		/* DEBUG_PRINT("K2_GetActorLocation_fn: %llx, K2_GetPawn_FN: %llx", (uintptr_t)K2_GetActorLocation_fn, (uintptr_t)K2_GetPawn_fn);
 		DEBUG_PRINT("K2_GetActorLocation_fn: %llx, K2_GetPawn_FN: %llx", (uintptr_t)BGUGetFloatAttr_fn, (uintptr_t)K2_GetPawn_fn);
@@ -781,7 +819,7 @@ public:
 			CommonData::enemyInfo.enemyInfo.playerHp = Hp;
 			this->client->write(&CommonData::enemyInfo, sizeof(CommonData::enemyInfo));
 			
-			
+			this->client->write(&CommonData::levelInfoBuffer, sizeof(CommonData::levelInfoBuffer));
 			Sleep(100);
 		}
 		
