@@ -242,10 +242,11 @@ struct blackMyth {
 
 	static void DEBUG_PRINT(const char* fmt, ...)
 	{
+#if DEBUG_PRINT_ENABLE
 		va_list args;
 		va_start(args, fmt);
 
-		int len = vsnprintf(loggerBuffer, sizeof(loggerBuffer) - 2, fmt, args); // 留出空间以添加换行符
+		int len = vsnprintf(loggerBuffer, sizeof(loggerBuffer) - 2, fmt, args);
 		va_end(args);
 
 		if (len >= 0 && len < sizeof(loggerBuffer) - 1) {
@@ -259,6 +260,7 @@ struct blackMyth {
 		}
 
 		WriteConsoleA(hConsoleOut, loggerBuffer, strlen(loggerBuffer), NULL, NULL);
+#endif
 	}
 
 	static std::string WCharToChar(const wchar_t* wStr)
