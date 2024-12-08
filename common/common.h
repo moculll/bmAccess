@@ -106,10 +106,10 @@ struct gameInfo_t {
 
 };
 
-static gameInfo_t infoBuffer;
-static gameInfo_t enemyInfo;
-static gameInfo_t locationBuffer;
-static gameInfo_t config;
-static gameInfo_t gameStatus;
-static gameInfo_t speakerInfo;
+inline static gameInfo_t infoBuffer;
+inline static gameInfo_t enemyInfo;
+inline static gameInfo_t locationBuffer;
+inline static gameInfo_t config;
+inline static gameInfo_t gameStatus;
+inline static gameInfo_t speakerInfo;
 } /* CommonData */

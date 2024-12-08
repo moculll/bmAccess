@@ -687,7 +687,8 @@ public:
 
 		if(MocIPC::getArg<CommonData::gameInfo_t*>(arg)->event & CommonData::event_t::EVENT_PLAYER_LOCATION_SET) {
 			CommonData::config.targetPlayerLocation = MocIPC::getArg<CommonData::gameInfo_t*>(arg)->targetPlayerLocation;
-
+			if(!gameInstance->sdkMgr.get<SDK::ACharacter*>("playerCharacter"))
+				return;
 			auto pawn = (gameInstance->sdkMgr.get<SDK::ACharacter*>("playerCharacter"))->PlayerState->PawnPrivate;
 			/* DEBUG_PRINT("location: x: %.5f, y:%.5f, z:%.5f", location.X, location.Y, location.Z); */
 			bool result = pawn->K2_SetActorLocation(CommonData::config.targetPlayerLocation, false, nullptr, false);
