@@ -23,7 +23,7 @@ enum class event_t {
     EVENT_PLAYER_LOCATION_SET = 1 << 2,
     EVENT_PLAYER_HP_SET = 1 << 3,
     EVENT_ENEMY_MAP = 1 << 4,
-    EVENT_GAMESTATUS = 1 << 5,
+    EVENT_GAMEINITED_RESULT = 1 << 5,
     EVENT_SPEAKERINFO = 1 << 6,
 };
 

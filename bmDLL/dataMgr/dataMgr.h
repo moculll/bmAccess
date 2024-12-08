@@ -407,7 +407,7 @@ struct blackMyth {
 			CommonData::locationBuffer.event = CommonData::event_t::EVENT_PLAYER_LOCATION;
 			CommonData::locationBuffer.playerLocation = { location.X, location.Y, location.Z };
 
-			CommonData::gameStatus.event = CommonData::event_t::EVENT_GAMESTATUS;
+			CommonData::gameStatus.event = CommonData::event_t::EVENT_GAMEINITED_RESULT;
 			CommonData::gameStatus.gameInited = 1;
 
 
@@ -572,19 +572,21 @@ struct blackMyth {
 
 			/*DEBUG_PRINT("Offsets: GObjects: Offset: {%llx}", SDK::Offsets::GObjects);*/
 		}
-		else if (!GObjectsScanResult) {
-			/*DEBUG_PRINT("Offsets: GObjects: Pattern scan failed.");*/
+		else {
+			DEBUG_PRINT("Offsets: GObjects: Pattern scan failed.");
+			
 		}
 
-		// AppendString
+		/* necessary for SDK register */
 		uint8_t* AppendStringScanResult = Memory::PatternScan((void*)BaseAddress, "48 89 ?? ?? ?? 57 48 83 ?? ?? 80 3D ?? ?? ?? ?? 00 48 8B ?? 48 8B ?? 74 ?? 4C 8D ?? ?? ?? ?? ?? EB ?? 48 8D ?? ?? ?? ?? ?? E8 ?? ?? ?? ?? 4C ?? ?? C6 ?? ?? ?? ?? ?? 01 8B ?? 8B ?? 0F ?? ?? C1 ?? 10 89 ?? ?? ?? 89 ?? ?? ?? 48 8B ?? ?? ?? 48 ?? ?? ?? 8D ?? ?? 49 ?? ?? ?? ?? 48 8B ?? E8 ?? ?? ?? ?? 83 ?? ?? 00");
 		if (AppendStringScanResult) {
 			DEBUG_PRINT("Offsets: AppendString: Address is +{%llx}", (uintptr_t)AppendStringScanResult - (uintptr_t)BaseAddress);
 			SDK::Offsets::AppendString = (UC::int32)((uintptr_t)AppendStringScanResult - (uintptr_t)BaseAddress);
 			DEBUG_PRINT("Offsets: AppendString: Offset: {%llx}", SDK::Offsets::AppendString);
 		}
-		else if (!AppendStringScanResult) {
-			/*DEBUG_PRINT("Offsets: AppendString: Pattern scan failed.");*/
+		else {
+			DEBUG_PRINT("Offsets: AppendString: Pattern scan failed.");
+			return false;
 		}
 
 		uint8_t* ProcessEventScanResult = Memory::PatternScan((void*)BaseAddress, "40 ?? 56 57 41 ?? 41 ?? 41 ?? 41 ?? 48 ?? ?? ?? ?? ?? ?? 48 8D ?? ?? ?? 48 89 ?? ?? ?? ?? ?? 48 8B ?? ?? ?? ?? ?? 48 ?? ?? 48 89 ?? ?? ?? ?? ?? 4D ?? ?? 48 ?? ?? 4C ?? ?? 48 ?? ??");
@@ -605,8 +607,9 @@ struct blackMyth {
 			MH_STATUS ret = MH_CreateHook(reinterpret_cast<LPVOID>(ProcessEventScanResult), &process_event_hook, reinterpret_cast<void**>(&processEventOriginal));
 			DEBUG_PRINT("Offsets: ProcessEvent: Offset: {%llx}", SDK::Offsets::ProcessEvent);
 		}
-		else if (!ProcessEventScanResult) {
+		else {
 			DEBUG_PRINT("Offsets: ProcessEvent: Pattern scan failed.");
+			return false;
 		}
 		
 
@@ -626,7 +629,7 @@ struct blackMyth {
 		sdkMgr.registPtr("UMGLib", reinterpret_cast<void*>(SDK::UGSE_UMGFuncLib::GetDefaultObj()));
 		sdkMgr.registPtr("KismetLib", reinterpret_cast<void*>(SDK::UKismetTextLibrary::GetDefaultObj()));
 		sdkMgr.registPtr("BGULib", reinterpret_cast<void*>(SDK::UBGUFunctionLibraryCS::GetDefaultObj()));
-		
+
 		/*process_event_addr = SDK::UWorld::GetWorld()->GetProcessEventAddr();
 		DEBUG_PRINT("processEventAddr: %llx", process_event_addr);*/
 
@@ -651,9 +654,12 @@ struct blackMyth {
 		DEBUG_PRINT("setbytext_fn: %llx", (uintptr_t)setbytext_fn);
 		DEBUG_PRINT("setbytext_fn: %llx", (uintptr_t)inputFocusChanging_fn);
 		DEBUG_PRINT("setbytext_fn: %llx", (uintptr_t)gsFocusChanging_fn); */
-		MH_EnableHook(sdkMgr.get<LPVOID>("ProcessEvent"));
+		if(MH_OK != MH_EnableHook(sdkMgr.get<LPVOID>("ProcessEvent"))) {
+			DEBUG_PRINT("ProcessEvent failed");
+			return false;
+		}
 		
-		CommonData::gameStatus.event = CommonData::event_t::EVENT_GAMESTATUS;
+		CommonData::gameStatus.event = CommonData::event_t::EVENT_GAMEINITED_RESULT;
 		CommonData::gameStatus.gameInited = 0;
 
 		return true;
@@ -707,8 +713,13 @@ public:
 		client = std::shared_ptr<MocIPC::IPCClient>(new MocIPC::IPCClient, [](MocIPC::IPCClient* instance) {});
 		client->registerRecvHOOK(testRecv);
         gameInstance = std::shared_ptr<blackMyth>(new blackMyth, [](blackMyth* instance) { instance->deinit(); });
-		running = true;
-        return gameInstance->init();
+
+		bool ret = gameInstance->init();
+		if(ret) {
+			running = true;
+		}
+
+        return ret;
 
 
 	}

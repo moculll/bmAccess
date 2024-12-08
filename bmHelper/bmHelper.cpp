@@ -277,7 +277,7 @@ void testRecv(void* arg)
         if(CommonData::enemyInfo.enemyInfo.playerHp)
         printf("enemy: %.5f", CommonData::enemyInfo.enemyInfo.playerHp);
     }
-    else if (MocIPC::getArg<CommonData::gameInfo_t*>(arg)->event & CommonData::event_t::EVENT_GAMESTATUS) {
+    else if (MocIPC::getArg<CommonData::gameInfo_t*>(arg)->event & CommonData::event_t::EVENT_GAMEINITED_RESULT) {
         memcpy(&CommonData::gameStatus, MocIPC::getArg<CommonData::gameInfo_t*>(arg), sizeof(CommonData::gameInfo_t));
         printf("gameStatus: %d\n", CommonData::gameStatus.gameInited);
     }
@@ -664,7 +664,7 @@ bmHelper::bmHelper(QWidget *parent)
     speaker->playInternal(tip);
 
  
-     /*notifyThread(this);*/
+    /*notifyThread(this);*/
     /*RemoteThreadInject32((LPWSTR)L"b1-Win64-Shipping.exe", (LPWSTR)L"D:\\WORK\\blackmyth\\dlltest\\x64\\Debug\\bmdll.dll");*/
 
     initHelper = std::thread(&bmHelper::initHelperThread, this);
