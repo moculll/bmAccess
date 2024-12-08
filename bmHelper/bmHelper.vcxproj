@@ -86,7 +86,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(ProjectDir);$(Qt_INCLUDEPATH_);./spkMgr;./keyMgr;../common;../mocIPC;../SDK;../spdlog/include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../;%(AdditionalIncludeDirectories);$(ProjectDir);$(Qt_INCLUDEPATH_);./spkMgr;./keyMgr;../common;../mocIPC;../SDK;../spdlog/include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>$(Qt_DEFINES_);%(PreprocessorDefinitions);</PreprocessorDefinitions>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
@@ -132,6 +132,7 @@
     <ClCompile Include="..\SDK\SDK\CoreUObject_functions.cpp" />
     <ClCompile Include="..\SDK\SDK\Engine_functions.cpp" />
     <ClCompile Include="keyMgr\keyMgr.cpp" />
+    <ClCompile Include="MapMgr\MapMgr.cpp" />
     <ClCompile Include="spkMgr\spkMgr.cpp" />
     <QtRcc Include="bmHelper.qrc" />
     <QtUic Include="bmHelper.ui" />
@@ -141,8 +142,10 @@
   <ItemGroup>
     <QtMoc Include="bmHelper.h" />
     <ClInclude Include="..\common\common.h" />
+    <ClInclude Include="..\json\json.hpp" />
     <ClInclude Include="..\MocIPC\mocIPC.h" />
     <ClInclude Include="keyMgr\keyMgr.h" />
+    <ClInclude Include="MapMgr\MapMgr.h" />
     <ClInclude Include="spkMgr\spkMgr.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

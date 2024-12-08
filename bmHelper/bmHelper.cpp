@@ -10,12 +10,13 @@
 #include <QMenu>
 #include <QTimer>
 #include <Windows.h>
+#include "MapMgr/MapMgr.h"
+
 HANDLE findProcess(WCHAR* processName)
 {
     HANDLE hProcessSnap;
     HANDLE hProcess;
     PROCESSENTRY32 pe32;
-    DWORD dwPriorityClass;
 
     // Take a snapshot of all processes in the system.
     hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
@@ -308,6 +309,11 @@ void testRecv(void* arg)
             ((spkMgr *)globalSpeaker)->playInternal(tip);
         /*std::string result = charArrayToString(CommonData::speakerInfo.speakerInfo.label, CommonData::speakerInfo.speakerInfo.length);
         printf("char data is %s", result.c_str());*/
+    }
+    else if (MocIPC::getArg<CommonData::gameInfo_t*>(arg)->event & CommonData::event_t::EVENT_LEVELINFO) {
+        memcpy(&CommonData::levelInfoBuffer, MocIPC::getArg<CommonData::gameInfo_t*>(arg), sizeof(CommonData::gameInfo_t));
+        printf("received levelId: %d\n", CommonData::levelInfoBuffer.levelInfo.levelId);
+
     }
     
     /*printf("[post]event: %d, received: %.05f, %.05f, %.05f\n", static_cast<int>(CommonData::buffer.event), CommonData::buffer.playerLocation.X, CommonData::buffer.playerLocation.Y, CommonData::buffer.playerLocation.Z);
@@ -677,6 +683,10 @@ bmHelper::bmHelper(QWidget *parent)
     
     importantInfoHelper = std::thread(&bmHelper::importantInfoThread, this);
     importantInfoHelper.detach();
+
+
+    std::shared_ptr<BmMapMgr> mapMgr = std::make_shared<BmMapMgr>();
+    mapMgr->init("bmmap.json");
 }
 
 

@@ -25,6 +25,24 @@ enum class event_t {
     EVENT_ENEMY_MAP = 1 << 4,
     EVENT_GAMEINITED_RESULT = 1 << 5,
     EVENT_SPEAKERINFO = 1 << 6,
+    EVENT_LEVELINFO = 1 << 7,
+};
+
+
+enum class mmap_t {
+    LYS_paintingworld_01 = 31, // 如意画轴-六六村
+    HFS01_PersistentLevel = 10, // 黑风山
+    HFS01_Old_GYCY_YKX_PersistentLevel = 11, // 隐·旧观音禅院
+    HFS_WoodDragon = 12, // 黑风山-尺木间
+    HFM02_PersistentLevel = 20, // 黄风岭
+    HFM_DuJiaoXian_Persist = 25, // 隐·斯哈里国
+    HFM_DustDragon_01 = 24, // 黄风岭-藏龙洞
+    LYS_PersistentLevel = 30, // 小西天
+    PSD_PersistentLevel = 40, // 盘丝岭
+    ZYS01_persistentlevel = 80, // 隐·紫云山
+    HYS_PersistentLevel = 50, // 火焰山
+    BYS_persistentlevel = 98, // 花果山
+    BSD02_persistentlevel = 70 // 隐·壁水洞
 };
 
 
@@ -68,6 +86,11 @@ struct labelSpeakerInfo_t {
     wchar_t label[100];
     uint16_t length;
 };
+
+struct levelInfo_t {
+    int levelId;
+};
+
 struct gameInfo_t {
     event_t event;
     
@@ -78,6 +101,7 @@ struct gameInfo_t {
         enemyInfo_t enemyInfo;
         int gameInited;
         labelSpeakerInfo_t speakerInfo;
+        levelInfo_t levelInfo;
     };
     ~gameInfo_t() {
 
@@ -112,4 +136,5 @@ inline static gameInfo_t locationBuffer;
 inline static gameInfo_t config;
 inline static gameInfo_t gameStatus;
 inline static gameInfo_t speakerInfo;
+inline static gameInfo_t levelInfoBuffer;
 } /* CommonData */

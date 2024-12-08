@@ -52,6 +52,9 @@
     <ClCompile Include="..\SDK\SDK\Engine_functions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MapMgr\MapMgr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="spkMgr\spkMgr.h">
@@ -64,6 +67,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\MocIPC\mocIPC.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\json\json.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MapMgr\MapMgr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
