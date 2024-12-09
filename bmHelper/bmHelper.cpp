@@ -11,7 +11,7 @@
 #include <QTimer>
 #include <Windows.h>
 #include "MapMgr/MapMgr.h"
-
+#include "mGameAudio/mGameAudio.h"
 HANDLE findProcess(WCHAR* processName)
 {
     HANDLE hProcessSnap;
@@ -687,6 +687,11 @@ bmHelper::bmHelper(QWidget *parent)
 
     std::shared_ptr<BmMapMgr> mapMgr = std::make_shared<BmMapMgr>();
     mapMgr->init("bmmap.json");
+
+    std::thread newthread = std::thread([] () {
+        MGameAudio::runTestCase();
+    });
+    newthread.detach();
 }
 
 

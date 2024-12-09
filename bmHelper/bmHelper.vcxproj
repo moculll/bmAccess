@@ -96,7 +96,7 @@
     </ClCompile>
     <Link />
     <Link>
-      <AdditionalDependencies>%(AdditionalDependencies);$(Qt_LIBS_);ucrtd.lib</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);$(Qt_LIBS_);ucrtd.lib;xaudio2.lib;$(SolutionDir)x64/Debug/mGameAudio.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'" Label="Configuration">
@@ -147,6 +147,11 @@
     <ClInclude Include="keyMgr\keyMgr.h" />
     <ClInclude Include="MapMgr\MapMgr.h" />
     <ClInclude Include="spkMgr\spkMgr.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\mGameAudio\mGameAudio.vcxproj">
+      <Project>{d471d6cd-9e38-443f-8d9f-0382686b4566}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
