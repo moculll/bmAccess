@@ -1,11 +1,16 @@
 #include "MapMgr/MapMgr.h"
 
 #include <fstream>
+
+#define DEBUG_PRINT_ENABLE 0
+#if DEBUG_PRINT_ENABLE
 #define DEBUG_PRINT(fmt, ...) \
             do { \
                 printf("[MapMgr.cpp][%s.%d]" fmt "\r\n", __func__, __LINE__, ##__VA_ARGS__); \
             } while(0);
-
+#else
+#define DEBUG_PRINT(fmt, ...)
+#endif
 using json = nlohmann::json;
 
 BmMapMgr::BmMapMgr() : currentLevelName("未初始化")
@@ -61,10 +66,16 @@ bool BmMapMgr::init(std::string jsonPath)
             int x = point["x"];
             int y = point["y"];
             int z = point["z"];
-
             DEBUG_PRINT("  Point Name: %s", pointName.c_str());
             DEBUG_PRINT("  Category: %s", category.c_str());
             DEBUG_PRINT("  Coordinates: (%d, %d, %d)", x, y, z);
+
+
+            pointVector_t pointVec = {x, y, z};
+            levelUnit_t levelUnit = {std::move(pointName), std::move(pointVec)};
+
+            currentLevelContainer.emplace_back(std::move(levelUnit));
+            
         }
 
         DEBUG_PRINT("----------------------");
@@ -77,7 +88,7 @@ bool BmMapMgr::init(std::string jsonPath)
 
 
 
-void BmMapMgr::updateCurrentMap(int mapId, double X, double Y, double Z)
+bool BmMapMgr::updateCurrentMap(int mapId, double X, double Y, double Z)
 {
     for (const auto& mapUnit : *mapJsonData.get()) {
         int id = mapUnit["id"];
@@ -94,7 +105,7 @@ void BmMapMgr::updateCurrentMap(int mapId, double X, double Y, double Z)
         }
 
         DEBUG_PRINT("map updated successful, id: %d", mapId);
-        currentLevelStorge.clear();
+        currentLevelContainer.clear();
 
         std::string code = mapUnit["code"];
         std::string name = mapUnit["name"];
@@ -118,16 +129,42 @@ void BmMapMgr::updateCurrentMap(int mapId, double X, double Y, double Z)
             int x = point["x"];
             int y = point["y"];
             int z = point["z"];
-            pointVector_t pointVec = {x, y, z};
-            levelStorge_t levelStorge = {pointName, pointVec};
-
-            currentLevelStorge.emplace_back(std::move(levelStorge));
-
             DEBUG_PRINT("  Point Name: %s", pointName.c_str());
             DEBUG_PRINT("  Category: %s", category.c_str());
             DEBUG_PRINT("  Coordinates: (%d, %d, %d)", x, y, z);
+
+            pointVector_t pointVec = {x, y, z};
+            levelUnit_t levelUnit = {std::move(pointName), std::move(pointVec)};
+
+            currentLevelContainer.emplace_back(std::move(levelUnit));
+
         }
-        break;
+        return true;
     }
+    return false;
 
 }
+
+
+template <>
+BmMapMgr::levelUnit_t* BmMapMgr::getUnit<BmMapMgr::PointDirection::CUR>()
+{
+    return currentLevelContainer.get();
+}
+
+template <>
+BmMapMgr::levelUnit_t *BmMapMgr::getUnit<BmMapMgr::PointDirection::NEXT>()
+{
+    ++currentLevelContainer;
+    return currentLevelContainer.get();
+}
+
+template <>
+BmMapMgr::levelUnit_t *BmMapMgr::getUnit<BmMapMgr::PointDirection::PRIV>()
+{
+    --currentLevelContainer;
+    return currentLevelContainer.get();
+}
+
+
+

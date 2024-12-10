@@ -687,7 +687,16 @@ bmHelper::bmHelper(QWidget *parent)
 
     std::shared_ptr<BmMapMgr> mapMgr = std::make_shared<BmMapMgr>();
     mapMgr->init("bmmap.json");
+    bool result = mapMgr->updateCurrentMap(30, 75001, 48001, -40000);
+    printf("update map result: %d", result ? 1 : 0);
 
+    for (int i = 0; i < 1000; i++) {
+        BmMapMgr::levelUnit_t* unit = mapMgr->getUnit<BmMapMgr::PointDirection::NEXT>();
+        if (unit) {
+            printf("get unit name: %s, location: [%d] [%d] [%d]\r\n", unit->pointName.c_str(), unit->point.X, unit->point.Y, unit->point.Z);
+        }
+    }
+    
     std::thread newthread = std::thread([] () {
         MGameAudio::runTestCase();
     });
