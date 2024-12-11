@@ -6,6 +6,8 @@
 #include "spkMgr.h"
 #include "keyMgr.h"
 #include "mocIPC.h"
+#include "MapMgr/MapMgr.h"
+#include "mGameAudio/mGameAudio.h"
 class bmHelper : public QWidget
 {
     Q_OBJECT
@@ -21,7 +23,7 @@ public:
         delete server;
 
     }
-
+    std::shared_ptr<BmMapMgr> mapMgr;
     spkMgr *speaker;
     keyMgr* key;
     MocIPC::IPCServer* server;

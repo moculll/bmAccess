@@ -10,8 +10,7 @@
 #include <QMenu>
 #include <QTimer>
 #include <Windows.h>
-#include "MapMgr/MapMgr.h"
-#include "mGameAudio/mGameAudio.h"
+
 HANDLE findProcess(WCHAR* processName)
 {
     HANDLE hProcessSnap;
@@ -117,6 +116,7 @@ struct bind_playerInfo_param_t {
 bind_playerInfo_param_t bind_playerInfo_param[3] = {0};
 
 static void *globalSpeaker = nullptr;
+static void *globalMapMgr = nullptr;
 void savePositionCallback(void* arg)
 {
     bmHelper* obj = (bmHelper*)arg;
@@ -271,12 +271,32 @@ void testRecv(void* arg)
     else if (MocIPC::getArg<CommonData::gameInfo_t*>(arg)->event & CommonData::event_t::EVENT_PLAYER_LOCATION) {
         printf("received location info\n");
         memcpy(&CommonData::locationBuffer, MocIPC::getArg<CommonData::gameInfo_t*>(arg), sizeof(CommonData::gameInfo_t));
+        if(((BmMapMgr*)globalMapMgr)->getCurrentMapRange().empty())
+            return;
+        DirectX::XMFLOAT3 newLocation = { static_cast<float>(CommonData::locationBuffer.playerLocation.X), static_cast<float>(CommonData::locationBuffer.playerLocation.Y), static_cast<float>(CommonData::locationBuffer.playerLocation.Z) };
+        
+        
+        auto locationMin = ((BmMapMgr*)globalMapMgr)->getCurrentMapRange()[0];
+        auto locationMax = ((BmMapMgr*)globalMapMgr)->getCurrentMapRange()[1];
+        DirectX::XMFLOAT3 mapMinRange = { static_cast<float>(locationMin.X), static_cast<float>(locationMin.Y), static_cast<float>(locationMin.Z) };
+        DirectX::XMFLOAT3 mapMaxRange = { static_cast<float>(locationMax.X), static_cast<float>(locationMax.Y), static_cast<float>(locationMax.Z) };
+        DirectX::XMFLOAT3 newLocationForAudio = MGameAudio::posGame2Audio<DirectX::XMFLOAT3>(newLocation, mapMinRange, mapMaxRange);
+        MGameAudio::updatePosition<MGameAudio::UpdatePositionParam::LISTENER>("test", newLocationForAudio);
     }
     else if (MocIPC::getArg<CommonData::gameInfo_t*>(arg)->event & CommonData::event_t::EVENT_ENEMY_MAP) {
         printf("received enemy info\n");
         memcpy(&CommonData::enemyInfo, MocIPC::getArg<CommonData::gameInfo_t*>(arg), sizeof(CommonData::gameInfo_t));
         if(CommonData::enemyInfo.enemyInfo.playerHp)
-        printf("enemy: %.5f", CommonData::enemyInfo.enemyInfo.playerHp);
+            printf("enemy: %.5f", CommonData::enemyInfo.enemyInfo.playerHp);
+        if(((BmMapMgr*)globalMapMgr)->getCurrentMapRange().empty())
+            return;
+        DirectX::XMFLOAT3 newLocation = { static_cast<float>(CommonData::enemyInfo.enemyInfo.X), static_cast<float>(CommonData::enemyInfo.enemyInfo.Y), static_cast<float>(CommonData::enemyInfo.enemyInfo.Z) };
+        auto locationMin = ((BmMapMgr*)globalMapMgr)->getCurrentMapRange()[0];
+        auto locationMax = ((BmMapMgr*)globalMapMgr)->getCurrentMapRange()[1];
+        DirectX::XMFLOAT3 mapMinRange = { static_cast<float>(locationMin.X), static_cast<float>(locationMin.Y), static_cast<float>(locationMin.Z) };
+        DirectX::XMFLOAT3 mapMaxRange = { static_cast<float>(locationMax.X), static_cast<float>(locationMax.Y), static_cast<float>(locationMax.Z) };
+        DirectX::XMFLOAT3 newLocationForAudio = MGameAudio::posGame2Audio<DirectX::XMFLOAT3>(newLocation, mapMinRange, mapMaxRange);
+        MGameAudio::updatePosition<MGameAudio::UpdatePositionParam::EMITTER>("test", newLocationForAudio);
     }
     else if (MocIPC::getArg<CommonData::gameInfo_t*>(arg)->event & CommonData::event_t::EVENT_GAMEINITED_RESULT) {
         memcpy(&CommonData::gameStatus, MocIPC::getArg<CommonData::gameInfo_t*>(arg), sizeof(CommonData::gameInfo_t));
@@ -311,9 +331,14 @@ void testRecv(void* arg)
         printf("char data is %s", result.c_str());*/
     }
     else if (MocIPC::getArg<CommonData::gameInfo_t*>(arg)->event & CommonData::event_t::EVENT_LEVELINFO) {
+        static bool result;
         memcpy(&CommonData::levelInfoBuffer, MocIPC::getArg<CommonData::gameInfo_t*>(arg), sizeof(CommonData::gameInfo_t));
-        printf("received levelId: %d\n", CommonData::levelInfoBuffer.levelInfo.levelId);
-
+        if(((BmMapMgr *)globalMapMgr)->getCurrentMap() != CommonData::levelInfoBuffer.levelInfo.levelId) {
+            result = ((BmMapMgr*)globalMapMgr)->updateCurrentMap(CommonData::levelInfoBuffer.levelInfo.levelId, CommonData::locationBuffer.playerLocation.X, CommonData::locationBuffer.playerLocation.Y, CommonData::locationBuffer.playerLocation.Z);
+            
+            printf("update map[%d] result: %d\r\n", CommonData::levelInfoBuffer.levelInfo.levelId, result ? 1 : 0);
+        }
+        
     }
     
     /*printf("[post]event: %d, received: %.05f, %.05f, %.05f\n", static_cast<int>(CommonData::buffer.event), CommonData::buffer.playerLocation.X, CommonData::buffer.playerLocation.Y, CommonData::buffer.playerLocation.Z);
@@ -560,7 +585,7 @@ static void autoAttentionDecrease(void* arg) {
     
 }
 bmHelper::bmHelper(QWidget *parent)
-    : QWidget(parent)
+    : QWidget(parent), attentionMode(0)
 {
     SetConsoleOutputCP(CP_UTF8);
 
@@ -685,9 +710,20 @@ bmHelper::bmHelper(QWidget *parent)
     importantInfoHelper.detach();
 
 
-    std::shared_ptr<BmMapMgr> mapMgr = std::make_shared<BmMapMgr>();
+    mapMgr = std::make_shared<BmMapMgr>();
     mapMgr->init("bmmap.json");
-    bool result = mapMgr->updateCurrentMap(30, 75001, 48001, -40000);
+    globalMapMgr = mapMgr.get();
+    static std::thread testThread = std::thread([] () {
+        MGameAudio::init();
+        MGameAudio::createNewVoice("test", "test1.wav");
+        while(1) {
+            MGameAudio::playAudio("test", true);
+            std::this_thread::sleep_for(std::chrono::milliseconds(5 * 1000));
+        }
+
+    });
+    testThread.detach();
+    /*bool result = mapMgr->updateCurrentMap(30, 75001, 48001, -40000);
     printf("update map result: %d", result ? 1 : 0);
 
     for (int i = 0; i < 1000; i++) {
@@ -700,7 +736,7 @@ bmHelper::bmHelper(QWidget *parent)
     std::thread newthread = std::thread([] () {
         MGameAudio::runTestCase();
     });
-    newthread.detach();
+    newthread.detach();*/
 }
 
 

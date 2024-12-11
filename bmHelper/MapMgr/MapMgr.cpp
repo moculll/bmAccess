@@ -13,7 +13,7 @@
 #endif
 using json = nlohmann::json;
 
-BmMapMgr::BmMapMgr() : currentLevelName("未初始化")
+BmMapMgr::BmMapMgr() : currentLevelName("未初始化"), currentMap(-15292)
 {
     mapJsonData = std::make_shared<nlohmann::json>();
     
@@ -104,9 +104,10 @@ bool BmMapMgr::updateCurrentMap(int mapId, double X, double Y, double Z)
             continue;
         }
 
+        this->currentMap = mapId;
         DEBUG_PRINT("map updated successful, id: %d", mapId);
         currentLevelContainer.clear();
-
+        currentMapRange.clear();
         std::string code = mapUnit["code"];
         std::string name = mapUnit["name"];
 
@@ -122,7 +123,10 @@ bool BmMapMgr::updateCurrentMap(int mapId, double X, double Y, double Z)
         DEBUG_PRINT("Range X: [%d, %d]", range_x[0], range_x[1]);
         DEBUG_PRINT("Range Y: [%d, %d]", range_y[0], range_y[1]);
         DEBUG_PRINT("Range Z: [%d, %d]", range_z[0], range_z[1]);
-
+        pointVector_t minRange = { range_x[0], range_y[0], range_z[0] };
+        pointVector_t maxRange = { range_x[1], range_y[1], range_z[1] };
+        currentMapRange.emplace_back(std::move(minRange));
+        currentMapRange.emplace_back(std::move(maxRange));
         for (const auto& point : mapUnit["points"]) {
             std::string pointName = point["name"];
             std::string category = point["category"];

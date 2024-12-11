@@ -90,6 +90,11 @@ public:
     bool init(std::string jsonPath);
     
     bool updateCurrentMap(int mapId, double X, double Y, double Z);
+    inline int getCurrentMap(){ return currentMap; }
+    inline const std::vector<pointVector_t> &getCurrentMapRange()
+    {
+        return this->currentMapRange;
+    }
 
     template <PointDirection>
     levelUnit_t *getUnit();
@@ -98,8 +103,8 @@ private:
     std::shared_ptr<nlohmann::json> mapJsonData;
 
     
-    
-
+    std::vector<pointVector_t> currentMapRange;
+    int currentMap;
     std::string currentLevelName;
     DoubleListContainer<levelUnit_t> currentLevelContainer;
 

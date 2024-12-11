@@ -154,6 +154,9 @@ struct blackMyth {
 	struct enemyAttr {
 		float delta;
 		float Hp;
+		float X;
+		float Y;
+		float Z;
 	};
 
 	
@@ -361,7 +364,7 @@ struct blackMyth {
 					float enemyHp = (sdkMgr.get<SDK::UBGUFunctionLibraryCS*>("BGULib"))->BGUGetFloatAttr(aiCharacter, SDK::EBGUAttrFloat::Hp);
 					DEBUG_PRINT("name: %s, DELTA: %.5f, HP: %.5f", aiCharacter->GetName().c_str(), result, enemyHp);
 
-					aiCharacterMap[aiCharacter->GetName()] = { result,enemyHp };
+					aiCharacterMap[aiCharacter->GetName()] = { result, enemyHp, static_cast<float>(location.X), static_cast<float>(location.Y), static_cast<float>(location.Z) };
 				}
 			}
 		}
@@ -807,16 +810,27 @@ public:
 			int index = 0;
 			float minDealta = 999999999.0f;
 			float Hp = 0;
+			float X = 0;
+			float Y = 0;
+			float Z = 0;
+
 			for (const auto& pair : gameInstance->aiCharacterMap) {
 				if (pair.second.delta < minDealta) {
 					minDealta = pair.second.delta;
 					Hp = pair.second.Hp;
+					X = pair.second.X;
+					Y = pair.second.Y;
+					Z = pair.second.Z;
+					
 				}
 					
 			}
 			CommonData::enemyInfo.event = CommonData::event_t::EVENT_ENEMY_MAP;
 			CommonData::enemyInfo.enemyInfo.enemyDelta = minDealta;
 			CommonData::enemyInfo.enemyInfo.playerHp = Hp;
+			CommonData::enemyInfo.enemyInfo.X = X;
+			CommonData::enemyInfo.enemyInfo.Y = Y;
+			CommonData::enemyInfo.enemyInfo.Z = Z;
 			this->client->write(&CommonData::enemyInfo, sizeof(CommonData::enemyInfo));
 			
 			this->client->write(&CommonData::levelInfoBuffer, sizeof(CommonData::levelInfoBuffer));

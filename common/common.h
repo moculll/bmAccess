@@ -80,6 +80,9 @@ struct enemyInfo_t {
     float playerStamina;
     float playerStaminaRecover;
     float enemyDelta;
+    float X;
+    float Y;
+    float Z;
 };
 
 struct labelSpeakerInfo_t {
