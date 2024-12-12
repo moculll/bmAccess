@@ -80,9 +80,13 @@ struct enemyInfo_t {
     float playerStamina;
     float playerStaminaRecover;
     float enemyDelta;
-    float X;
-    float Y;
-    float Z;
+    SDK::FVector enemyLocation;
+};
+
+struct playerLocationInfo_t {
+    SDK::FVector Location;
+    SDK::FVector Rotator;
+    SDK::FVector OrientTop;
 };
 
 struct labelSpeakerInfo_t {
@@ -99,7 +103,7 @@ struct gameInfo_t {
     
     union {
         playerInfo_t playerInfo;
-        SDK::FVector playerLocation;
+        playerLocationInfo_t playerLocationInfo;
         SDK::FVector targetPlayerLocation;
         enemyInfo_t enemyInfo;
         int gameInited;
@@ -124,8 +128,10 @@ struct gameInfo_t {
         else if (_event == event_t::EVENT_PLAYER_LOCATION_SET) {
             this->targetPlayerLocation = { 0, 0, 0 };
         }
-        else if (_event == event_t::EVENT_PLAYER_LOCATION){
-            this->playerLocation = { 0, 0, 0 };
+        else if (_event == event_t::EVENT_PLAYER_LOCATION) {
+            this->playerLocationInfo.Location = { .0f, .0f, .0f };
+            this->playerLocationInfo.Rotator = { .0f, .0f, .0f };
+            this->playerLocationInfo.OrientTop = { .0f, .0f, .0f };
         }
     }
 

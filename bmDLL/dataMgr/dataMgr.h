@@ -123,7 +123,7 @@ struct blackMyth {
 
 		bool registPtr(std::string key, void* ptr)
 		{
-			DEBUG_PRINT("[registered] %s:%llx", key.c_str(), ptr);
+			/*DEBUG_PRINT("[registered] %s:%llx", key.c_str(), ptr);*/
 			data[key] = ptr;
 			return true;
 		}
@@ -355,6 +355,7 @@ struct blackMyth {
 		if (sdkMgr.get<SDK::UObject*>("Function b1.BGUCharacterMovementComponent.TryGetCurNormalFromMovement") == fn && caller->Outer != sdkMgr.get<SDK::UObject*>("playerCharacter")) {
 			SDK::ACharacter* aiCharacter = ((SDK::UCharacterMovementComponent*)caller)->CharacterOwner;
 			SDK::ACharacter* playerCharacter = sdkMgr.get<SDK::ACharacter*>("playerCharacter");
+			SDK::UKismetMathLibrary* kismetmathlib = sdkMgr.get<SDK::UKismetMathLibrary*>("KismetMathLib");
 			if (aiCharacter) {
 				
 				auto location = aiCharacter->K2_GetActorLocation();
@@ -362,9 +363,14 @@ struct blackMyth {
 					auto location2 = playerCharacter->K2_GetActorLocation();
 					float result = static_cast<float>(sqrt((location.X - location2.X) * (location.X - location2.X) + (location.Y - location2.Y) * (location.Y - location2.Y) + (location.Z - location2.Z) * (location.Z - location2.Z)));
 					float enemyHp = (sdkMgr.get<SDK::UBGUFunctionLibraryCS*>("BGULib"))->BGUGetFloatAttr(aiCharacter, SDK::EBGUAttrFloat::Hp);
-					DEBUG_PRINT("name: %s, DELTA: %.5f, HP: %.5f", aiCharacter->GetName().c_str(), result, enemyHp);
-
-					aiCharacterMap[aiCharacter->GetName()] = { result, enemyHp, static_cast<float>(location.X), static_cast<float>(location.Y), static_cast<float>(location.Z) };
+					/*DEBUG_PRINT("name: %s, DELTA: %.5f, HP: %.5f", aiCharacter->GetName().c_str(), result, enemyHp);*/
+					/*SDK::FRotator playerRotator = playerCharacter->K2_GetActorRotation();
+					SDK::FRotator enemyRotator = aiCharacter->K2_GetActorRotation();*/
+					/* SDK::FVector2D playerVector2D = kismetmathlib->Conv_VectorToVector2D(playerCharacter->K2_GetActorLocation());
+					SDK::FVector2D enemyVector2D = kismetmathlib->Conv_VectorToVector2D(aiCharacter->K2_GetActorLocation());
+					DEBUG_PRINT("player: %lf %lf", playerVector2D.X, playerVector2D.Y);
+					DEBUG_PRINT("enemy: %lf %lf", enemyVector2D.X, enemyVector2D.Y); */
+					aiCharacterMap[aiCharacter->GetName()] = { result, enemyHp, static_cast<float>(location.X), static_cast<float>(location.Y),  static_cast<float>(location.Z) };
 				}
 			}
 		}
@@ -379,6 +385,7 @@ struct blackMyth {
 
 			SDK::ACharacter* playerCharacter = param->character;
 			SDK::UGameplayStatics* GameplayStatics = sdkMgr.get<SDK::UGameplayStatics*>("GameplayStatics");
+			SDK::UKismetMathLibrary* kismetmathlib = sdkMgr.get<SDK::UKismetMathLibrary*>("KismetMathLib");
 			if (!playerCharacter) {
 				sdkMgr.registPtr("playerCharacter", nullptr);
 				return;
@@ -386,8 +393,9 @@ struct blackMyth {
 
 			sdkMgr.registPtr("playerCharacter", reinterpret_cast<void*>(param->character));
 			auto location = playerCharacter->K2_GetActorLocation();
-
-			DEBUG_PRINT("location: x: %.5f, y:%.5f, z:%.5f", location.X, location.Y, location.Z);
+			auto rotator = playerCharacter->GetActorForwardVector();
+			auto orientTop = playerCharacter->GetActorUpVector();
+			/*DEBUG_PRINT("location: x: %.5f, y:%.5f, z:%.5f", location.X, location.Y, location.Z);*/
 
 			float playerHp = BGULib->BGUGetFloatAttr(playerCharacter, SDK::EBGUAttrFloat::Hp);
 			float playerMp = BGULib->BGUGetFloatAttr(playerCharacter, SDK::EBGUAttrFloat::Mp);
@@ -429,12 +437,17 @@ struct blackMyth {
 
 			/*memset(&CommonData::locationBuffer, 0, sizeof(CommonData::locationBuffer));*/
 			CommonData::locationBuffer.event = CommonData::event_t::EVENT_PLAYER_LOCATION;
-			CommonData::locationBuffer.playerLocation = { location.X, location.Y, location.Z };
-
+			CommonData::locationBuffer.playerLocationInfo.Location = { location.X, location.Y, location.Z };
+			CommonData::locationBuffer.playerLocationInfo.Rotator = { rotator.X, rotator.Y, rotator.Z };
+			CommonData::locationBuffer.playerLocationInfo.OrientTop = { orientTop.X, orientTop.Y, orientTop.Z };
+			
 			CommonData::gameStatus.event = CommonData::event_t::EVENT_GAMEINITED_RESULT;
 			CommonData::gameStatus.gameInited = 1;
 
 
+			
+			
+			
 		}
 		
 		
@@ -654,6 +667,7 @@ struct blackMyth {
 		sdkMgr.registPtr("BGULib", reinterpret_cast<void*>(SDK::UBGUFunctionLibraryCS::GetDefaultObj()));
 		sdkMgr.registPtr("GameplayStatics", reinterpret_cast<void*>(SDK::UGameplayStatics::GetDefaultObj()));
 		sdkMgr.registPtr("WorldFuncLib", reinterpret_cast<void*>(SDK::UGSE_WorldFuncLib::GetDefaultObj()));
+		sdkMgr.registPtr("KismetMathLib", reinterpret_cast<void*>(SDK::UKismetMathLibrary::GetDefaultObj()));
 
 		/*process_event_addr = SDK::UWorld::GetWorld()->GetProcessEventAddr();
 		DEBUG_PRINT("processEventAddr: %llx", process_event_addr);*/
@@ -828,9 +842,9 @@ public:
 			CommonData::enemyInfo.event = CommonData::event_t::EVENT_ENEMY_MAP;
 			CommonData::enemyInfo.enemyInfo.enemyDelta = minDealta;
 			CommonData::enemyInfo.enemyInfo.playerHp = Hp;
-			CommonData::enemyInfo.enemyInfo.X = X;
-			CommonData::enemyInfo.enemyInfo.Y = Y;
-			CommonData::enemyInfo.enemyInfo.Z = Z;
+			CommonData::enemyInfo.enemyInfo.enemyLocation.X = X;
+			CommonData::enemyInfo.enemyInfo.enemyLocation.Y = Y;
+			CommonData::enemyInfo.enemyInfo.enemyLocation.Z = Z;
 			this->client->write(&CommonData::enemyInfo, sizeof(CommonData::enemyInfo));
 			
 			this->client->write(&CommonData::levelInfoBuffer, sizeof(CommonData::levelInfoBuffer));

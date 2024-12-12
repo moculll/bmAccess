@@ -2306,5 +2306,8 @@
     <ClCompile Include="Minhook\src\HDE\hde64.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\SDK\SDK\AkAudio_functions.cpp">
+      <Filter>SDK</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

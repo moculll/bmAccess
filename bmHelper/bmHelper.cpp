@@ -121,8 +121,8 @@ void savePositionCallback(void* arg)
 {
     bmHelper* obj = (bmHelper*)arg;
     obj->speaker->playInternal("已保存当前位置");
-    CommonData::config.targetPlayerLocation = CommonData::locationBuffer.playerLocation;
-    printf("event: %d, received: %.05f, %.05f, %.05f\n", static_cast<int>(CommonData::locationBuffer.event), CommonData::locationBuffer.playerLocation.X, CommonData::locationBuffer.playerLocation.Y, CommonData::locationBuffer.playerLocation.Z);
+    CommonData::config.targetPlayerLocation = CommonData::locationBuffer.playerLocationInfo.Location;
+    printf("event: %d, received: %.05f, %.05f, %.05f\n", static_cast<int>(CommonData::locationBuffer.event), CommonData::locationBuffer.playerLocationInfo.Location.X, CommonData::locationBuffer.playerLocationInfo.Location.Y, CommonData::locationBuffer.playerLocationInfo.Location.Z);
     printf("save position pressed!");
     /* obj->server->write((void*)&a, sizeof(int)); */
 
@@ -234,7 +234,8 @@ std::string wcharToString(const std::wstring& wstr)
     if (err != 0) {
         throw std::runtime_error("wcstombs_s failed to calculate size");
     }
-
+    /*[Listener] : X: 6.668327, Y : -4.535948, Z : 0.045233
+[Emitter] : X : 4.631044, Y : -4.438434, Z : 0.204939*/
     std::vector<char> buffer(len);
     err = wcstombs_s(&len, buffer.data(), buffer.size(), wstr.c_str(), _TRUNCATE);
     if (err != 0) {
@@ -265,15 +266,15 @@ void testRecv(void* arg)
 {
     
     if (MocIPC::getArg<CommonData::gameInfo_t*>(arg)->event & CommonData::event_t::EVENT_PLAYER_INFO) {
-        printf("received player info\n");
+        
         memcpy(&CommonData::infoBuffer, MocIPC::getArg<CommonData::gameInfo_t*>(arg), sizeof(CommonData::gameInfo_t));
     }
     else if (MocIPC::getArg<CommonData::gameInfo_t*>(arg)->event & CommonData::event_t::EVENT_PLAYER_LOCATION) {
-        printf("received location info\n");
+        
         memcpy(&CommonData::locationBuffer, MocIPC::getArg<CommonData::gameInfo_t*>(arg), sizeof(CommonData::gameInfo_t));
         if(((BmMapMgr*)globalMapMgr)->getCurrentMapRange().empty())
             return;
-        DirectX::XMFLOAT3 newLocation = { static_cast<float>(CommonData::locationBuffer.playerLocation.X), static_cast<float>(CommonData::locationBuffer.playerLocation.Y), static_cast<float>(CommonData::locationBuffer.playerLocation.Z) };
+        DirectX::XMFLOAT3 newLocation = { static_cast<float>(CommonData::locationBuffer.playerLocationInfo.Location.X), static_cast<float>(CommonData::locationBuffer.playerLocationInfo.Location.Y), static_cast<float>(CommonData::locationBuffer.playerLocationInfo.Location.Z) };
         
         
         auto locationMin = ((BmMapMgr*)globalMapMgr)->getCurrentMapRange()[0];
@@ -281,21 +282,27 @@ void testRecv(void* arg)
         DirectX::XMFLOAT3 mapMinRange = { static_cast<float>(locationMin.X), static_cast<float>(locationMin.Y), static_cast<float>(locationMin.Z) };
         DirectX::XMFLOAT3 mapMaxRange = { static_cast<float>(locationMax.X), static_cast<float>(locationMax.Y), static_cast<float>(locationMax.Z) };
         DirectX::XMFLOAT3 newLocationForAudio = MGameAudio::posGame2Audio<DirectX::XMFLOAT3>(newLocation, mapMinRange, mapMaxRange);
-        MGameAudio::updatePosition<MGameAudio::UpdatePositionParam::LISTENER>("test", newLocationForAudio);
+        CommonData::locationBuffer.playerLocationInfo.Rotator.Normalize();
+        CommonData::locationBuffer.playerLocationInfo.OrientTop.Normalize();
+        DirectX::XMFLOAT3 newOrientFront = { static_cast<float>(CommonData::locationBuffer.playerLocationInfo.Rotator.X), static_cast<float>(CommonData::locationBuffer.playerLocationInfo.Rotator.Y), static_cast<float>(CommonData::locationBuffer.playerLocationInfo.Rotator.Z) };
+        DirectX::XMFLOAT3 newOrientTop = { static_cast<float>(CommonData::locationBuffer.playerLocationInfo.OrientTop.X), static_cast<float>(CommonData::locationBuffer.playerLocationInfo.OrientTop.Y), static_cast<float>(CommonData::locationBuffer.playerLocationInfo.OrientTop.Z) };
+        printf("[Listener]: X: %lf, Y: %lf, Z: %lf", newLocationForAudio.x, newLocationForAudio.y, newLocationForAudio.z);
+        MGameAudio::updatePosition<MGameAudio::UpdatePositionParam::LISTENER>("test", newLocationForAudio, newOrientFront, newOrientTop);
     }
     else if (MocIPC::getArg<CommonData::gameInfo_t*>(arg)->event & CommonData::event_t::EVENT_ENEMY_MAP) {
-        printf("received enemy info\n");
+        
         memcpy(&CommonData::enemyInfo, MocIPC::getArg<CommonData::gameInfo_t*>(arg), sizeof(CommonData::gameInfo_t));
         if(CommonData::enemyInfo.enemyInfo.playerHp)
             printf("enemy: %.5f", CommonData::enemyInfo.enemyInfo.playerHp);
         if(((BmMapMgr*)globalMapMgr)->getCurrentMapRange().empty())
             return;
-        DirectX::XMFLOAT3 newLocation = { static_cast<float>(CommonData::enemyInfo.enemyInfo.X), static_cast<float>(CommonData::enemyInfo.enemyInfo.Y), static_cast<float>(CommonData::enemyInfo.enemyInfo.Z) };
+        DirectX::XMFLOAT3 newLocation = { static_cast<float>(CommonData::enemyInfo.enemyInfo.enemyLocation.X), static_cast<float>(CommonData::enemyInfo.enemyInfo.enemyLocation.Y), static_cast<float>(CommonData::enemyInfo.enemyInfo.enemyLocation.Z) };
         auto locationMin = ((BmMapMgr*)globalMapMgr)->getCurrentMapRange()[0];
         auto locationMax = ((BmMapMgr*)globalMapMgr)->getCurrentMapRange()[1];
         DirectX::XMFLOAT3 mapMinRange = { static_cast<float>(locationMin.X), static_cast<float>(locationMin.Y), static_cast<float>(locationMin.Z) };
         DirectX::XMFLOAT3 mapMaxRange = { static_cast<float>(locationMax.X), static_cast<float>(locationMax.Y), static_cast<float>(locationMax.Z) };
         DirectX::XMFLOAT3 newLocationForAudio = MGameAudio::posGame2Audio<DirectX::XMFLOAT3>(newLocation, mapMinRange, mapMaxRange);
+        printf("[Emitter]: X: %lf, Y: %lf, Z: %lf", newLocationForAudio.x, newLocationForAudio.y, newLocationForAudio.z);
         MGameAudio::updatePosition<MGameAudio::UpdatePositionParam::EMITTER>("test", newLocationForAudio);
     }
     else if (MocIPC::getArg<CommonData::gameInfo_t*>(arg)->event & CommonData::event_t::EVENT_GAMEINITED_RESULT) {
@@ -334,7 +341,7 @@ void testRecv(void* arg)
         static bool result;
         memcpy(&CommonData::levelInfoBuffer, MocIPC::getArg<CommonData::gameInfo_t*>(arg), sizeof(CommonData::gameInfo_t));
         if(((BmMapMgr *)globalMapMgr)->getCurrentMap() != CommonData::levelInfoBuffer.levelInfo.levelId) {
-            result = ((BmMapMgr*)globalMapMgr)->updateCurrentMap(CommonData::levelInfoBuffer.levelInfo.levelId, CommonData::locationBuffer.playerLocation.X, CommonData::locationBuffer.playerLocation.Y, CommonData::locationBuffer.playerLocation.Z);
+            result = ((BmMapMgr*)globalMapMgr)->updateCurrentMap(CommonData::levelInfoBuffer.levelInfo.levelId, CommonData::locationBuffer.playerLocationInfo.Location.X, CommonData::locationBuffer.playerLocationInfo.Location.Y, CommonData::locationBuffer.playerLocationInfo.Location.Z);
             
             printf("update map[%d] result: %d\r\n", CommonData::levelInfoBuffer.levelInfo.levelId, result ? 1 : 0);
         }
@@ -718,7 +725,7 @@ bmHelper::bmHelper(QWidget *parent)
         MGameAudio::createNewVoice("test", "test1.wav");
         while(1) {
             MGameAudio::playAudio("test", true);
-            std::this_thread::sleep_for(std::chrono::milliseconds(5 * 1000));
+            std::this_thread::sleep_for(std::chrono::milliseconds(10 * 1000));
         }
 
     });

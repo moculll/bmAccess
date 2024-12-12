@@ -898,6 +898,7 @@
     <ClInclude Include="framework.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\SDK\SDK\AkAudio_functions.cpp" />
     <ClCompile Include="..\SDK\SDK\b1MinusManaged_functions.cpp" />
     <ClCompile Include="..\SDK\SDK\b1_functions.cpp" />
     <ClCompile Include="..\SDK\SDK\Basic.cpp" />
