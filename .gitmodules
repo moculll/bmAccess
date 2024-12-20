@@ -7,3 +7,6 @@
 [submodule "mGameAudio"]
 	path = mGameAudio
 	url = https://github.com/moculll/mGameAudio.git
+[submodule "bmHelper/KeyMgr"]
+	path = bmHelper/KeyMgr
+	url = https://github.com/moculll/KeyMgr.git
