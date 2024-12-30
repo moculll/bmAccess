@@ -3,10 +3,10 @@
 #include <QTextToSpeech>
 #include <queue>
 #include <QTimer>
-class spkMgr {
+class SpkMgr {
 public:
-	spkMgr();
-	~spkMgr();
+	SpkMgr();
+	~SpkMgr();
 
 	void play(QString &targetText);
 	void play(const char* targetText);

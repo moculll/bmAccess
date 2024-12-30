@@ -3,10 +3,10 @@
 #include <QtWidgets/QWidget>
 #include "ui_bmHelper.h"
 #include <QSystemTrayIcon>
-#include "spkMgr.h"
-#include "keyMgr.h"
-#include "mocIPC.h"
+#include "SpkMgr/SpkMgr.h"
+#include "KeyMgr/KeyMgr.h"
 #include "MapMgr/MapMgr.h"
+#include "mocIPC.h"
 #include "mGameAudio/mGameAudio.h"
 class bmHelper : public QWidget
 {
@@ -18,15 +18,11 @@ public:
     {
         delete mPetMovie;
         delete trayIcon;
-        delete speaker;
-        delete key;
-        delete server;
-
     }
     std::shared_ptr<BmMapMgr> mapMgr;
-    spkMgr *speaker;
-    keyMgr* key;
-    MocIPC::IPCServer* server;
+    inline static std::shared_ptr<SpkMgr> speaker;
+    std::shared_ptr<KeyMgr> keyMgr;
+    std::shared_ptr<MocIPC::IPCServer> server;
     QSystemTrayIcon* trayIcon;
     bool injected;
     bool autoAttention;
@@ -56,7 +52,4 @@ private:
     std::thread autoAttentionHelper;
 
     std::thread importantInfoHelper;
-    static void playReadme(void* arg);
-
-
 };

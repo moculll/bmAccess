@@ -4,7 +4,7 @@
 #include <thread>
 
 
-spkMgr::spkMgr()
+SpkMgr::SpkMgr()
 {
     this->speed = 20;
     this->volume = 70;
@@ -20,11 +20,11 @@ spkMgr::spkMgr()
 }
 
 
-spkMgr::~spkMgr() {
+SpkMgr::~SpkMgr() {
     delete speaker;
 }
 
-void spkMgr::processQueue() {
+void SpkMgr::processQueue() {
     if (!textQueue.empty() && speaker->state() == QTextToSpeech::Ready) {
         currentText = textQueue.front();
         textQueue.pop();
@@ -32,14 +32,14 @@ void spkMgr::processQueue() {
     }
 }
 
-void spkMgr::playThreadFunc(const wchar_t* targetText)
+void SpkMgr::playThreadFunc(const wchar_t* targetText)
 {
     
     
 
 }
 
-void spkMgr::playInternal(QString& targetText)
+void SpkMgr::playInternal(QString& targetText)
 {
     
     QMetaObject::invokeMethod(speaker,
@@ -48,7 +48,7 @@ void spkMgr::playInternal(QString& targetText)
         Q_ARG(QString, targetText));
 }
 
-void spkMgr::playTextBlock(QString& targetText)
+void SpkMgr::playTextBlock(QString& targetText)
 {
     if (speaker->state() == QTextToSpeech::Speaking) {
         if (targetText != currentText) {
@@ -64,7 +64,7 @@ void spkMgr::playTextBlock(QString& targetText)
 
 }
 
-void spkMgr::playInternal(const char* targetText)
+void SpkMgr::playInternal(const char* targetText)
 {
     QMetaObject::invokeMethod(speaker,
         "say",
@@ -72,18 +72,7 @@ void spkMgr::playInternal(const char* targetText)
         Q_ARG(QString, targetText));
 }
 
-void spkMgr::play(QString &targetText)
-{
-    /*speaker->say(targetText);*/
-    if (speaker->state() == QTextToSpeech::Speaking)
-        return;
-    QMetaObject::invokeMethod(speaker,
-        "say",
-        Qt::QueuedConnection,
-        Q_ARG(QString, targetText));
-}
-
-void spkMgr::play(const char *targetText)
+void SpkMgr::play(QString &targetText)
 {
     /*speaker->say(targetText);*/
     if (speaker->state() == QTextToSpeech::Speaking)
@@ -94,13 +83,24 @@ void spkMgr::play(const char *targetText)
         Q_ARG(QString, targetText));
 }
 
-void spkMgr::setSpeed(bool direction)
+void SpkMgr::play(const char *targetText)
+{
+    /*speaker->say(targetText);*/
+    if (speaker->state() == QTextToSpeech::Speaking)
+        return;
+    QMetaObject::invokeMethod(speaker,
+        "say",
+        Qt::QueuedConnection,
+        Q_ARG(QString, targetText));
+}
+
+void SpkMgr::setSpeed(bool direction)
 {
     this->setSpeed(direction ? ((this->speed + 10) >= 100 ? 100 : (this->speed + 10)) : \
         ((this->speed - 10) <= 0 ? 0 : (this->speed - 10)));
 }
 
-void spkMgr::setSpeed(int speed)
+void SpkMgr::setSpeed(int speed)
 {
     this->speed = speed;
     speaker->setRate((float)speed / 100.0f);
@@ -108,13 +108,13 @@ void spkMgr::setSpeed(int speed)
     this->playInternal(tip);
 }
 
-void spkMgr::setVolume(bool direction)
+void SpkMgr::setVolume(bool direction)
 {
     this->setVolume(direction ? ((this->volume + 10) > 100 ? 100 : (this->volume + 10)) : \
         ((this->volume - 10) <= 0 ? 5 : (this->volume - 10)));
 }
 
-void spkMgr::setVolume(int volume)
+void SpkMgr::setVolume(int volume)
 {
     this->volume = volume;
     this->speaker->setVolume((float)volume / 100.0f);

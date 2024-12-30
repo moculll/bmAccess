@@ -21,6 +21,9 @@
       <UniqueIdentifier>{639EADAA-A684-42e4-A9AD-28FC9BCB8F7C}</UniqueIdentifier>
       <Extensions>ts</Extensions>
     </Filter>
+    <Filter Include="SpkMgr">
+      <UniqueIdentifier>{669908d5-7102-4249-80ae-52d135cb5456}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="bmHelper.qrc">
@@ -37,12 +40,6 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="spkMgr\spkMgr.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="keyMgr\keyMgr.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\SDK\SDK\Basic.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -55,18 +52,12 @@
     <ClCompile Include="MapMgr\MapMgr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SpkMgr\SpkMgr.cpp">
+      <Filter>SpkMgr</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="spkMgr\spkMgr.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="keyMgr\keyMgr.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\common\common.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\MocIPC\mocIPC.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\json\json.hpp">
@@ -74,6 +65,9 @@
     </ClInclude>
     <ClInclude Include="MapMgr\MapMgr.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SpkMgr\SpkMgr.h">
+      <Filter>SpkMgr</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -115,100 +115,8 @@ struct bind_playerInfo_param_t {
 };
 bind_playerInfo_param_t bind_playerInfo_param[3] = {0};
 
-static void *globalSpeaker = nullptr;
 static void *globalMapMgr = nullptr;
-void savePositionCallback(void* arg)
-{
-    bmHelper* obj = (bmHelper*)arg;
-    obj->speaker->playInternal("已保存当前位置");
-    CommonData::config.targetPlayerLocation = CommonData::locationBuffer.playerLocationInfo.Location;
-    printf("event: %d, received: %.05f, %.05f, %.05f\n", static_cast<int>(CommonData::locationBuffer.event), CommonData::locationBuffer.playerLocationInfo.Location.X, CommonData::locationBuffer.playerLocationInfo.Location.Y, CommonData::locationBuffer.playerLocationInfo.Location.Z);
-    printf("save position pressed!");
-    /* obj->server->write((void*)&a, sizeof(int)); */
 
-}
-void setPositionCallback(void* arg)
-{
-    bmHelper* obj = (bmHelper*)arg;
-    HANDLE hProcess = nullptr;
-
-    hProcess = findProcess((LPWSTR)L"b1-Win64-Shipping.exe");
-    if (hProcess && obj->injected && CommonData::gameStatus.gameInited) {
-        CommonData::gameInfo_t send(CommonData::event_t::EVENT_PLAYER_LOCATION_SET);
-        send.targetPlayerLocation = CommonData::config.targetPlayerLocation;
-
-        obj->server->write((void*)&send, sizeof(CommonData::gameInfo_t));
-
-        obj->speaker->playInternal("已传送至保存的位置");
-        printf("set position pressed!");
-    }
-    else {
-        if (!CommonData::gameStatus.gameInited && hProcess) {
-            obj->speaker->playInternal("未进入游戏世界，无法传送");
-        }
-        else {
-            obj->speaker->playInternal("未检测到游戏, 毛都获取不到啊");
-        }
-        
-    }
-    
-
-}
-static void playInfoNotify(void* arg)
-{
-    QString tip;
-    bind_playerInfo_param_t* obj = (bind_playerInfo_param_t*)arg;
-    bmHelper *owner = (bmHelper *)obj->obj;
-    int number = obj->number;
-    if (number == 0) {
-        tip = QString("血量: %1, 血瓶: %2") \
-            .arg(CommonData::infoBuffer.playerInfo.playerHp).arg(CommonData::infoBuffer.playerInfo.playerBloodButton);
-    }
-    else if (number == 1) {
-        tip = QString("灵力: %1, 蓝条: %2") \
-            .arg(CommonData::infoBuffer.playerInfo.playerStamina).arg(CommonData::infoBuffer.playerInfo.playerMp);
-    }
-    else if (number == 2) {
-        QString buffer;
-        if (CommonData::infoBuffer.playerInfo.playerBurn)
-            buffer = "烧伤";
-        else if (CommonData::infoBuffer.playerInfo.playerFreeze)
-            buffer = "冻结";
-        else if (CommonData::infoBuffer.playerInfo.playerPoison)
-            buffer = "中毒";
-        else if (CommonData::infoBuffer.playerInfo.playerThunder)
-            buffer = "麻痹";
-        else {
-            buffer = "没异常啊卧槽";
-        }
-        tip = QString("能量: %1, 异常: %2") \
-            .arg(CommonData::infoBuffer.playerInfo.playerEnergy).arg(buffer);
-    }
-
-
-    owner->speaker->playInternal(tip);
-
-}
-void increaseVolume(void* arg)
-{
-    bmHelper* obj = (bmHelper*)arg;
-    obj->speaker->setVolume(true);
-}
-void decreaseVolume(void* arg)
-{
-    bmHelper* obj = (bmHelper*)arg;
-    obj->speaker->setVolume(false);
-}
-void increaseSpeed(void* arg)
-{
-    bmHelper* obj = (bmHelper*)arg;
-    obj->speaker->setSpeed(true);
-}
-void decreaseSpeed(void* arg)
-{
-    bmHelper* obj = (bmHelper*)arg;
-    obj->speaker->setSpeed(false);
-}
 
 int my_wprintf(const wchar_t* format, ...)
 {
@@ -332,8 +240,8 @@ void testRecv(void* arg)
         /*my_wprintf(L"[接收到的数据] %s\n", CommonData::speakerInfo.speakerInfo.label);*/
         std::wstring ws(CommonData::speakerInfo.speakerInfo.label);
         QString tip = QString::fromStdWString(ws);
-        if(globalSpeaker)
-            ((spkMgr *)globalSpeaker)->playInternal(tip);
+        if(bmHelper::speaker)
+            bmHelper::speaker->playInternal(tip);
         /*std::string result = charArrayToString(CommonData::speakerInfo.speakerInfo.label, CommonData::speakerInfo.speakerInfo.length);
         printf("char data is %s", result.c_str());*/
     }
@@ -355,24 +263,6 @@ void testRecv(void* arg)
     if(CommonData::buffer.event & CommonData::event_t::EVENT_PLAYER_LOCATION_SET) {
         printf("event: %d, received: %.05f, %.05f, %.05f\n", static_cast<int>(CommonData::buffer.event), CommonData::buffer.playerLocation.X, CommonData::buffer.playerLocation.Y, CommonData::buffer.playerLocation.Z);
     }*/
-
-}
-
-void bmHelper::playReadme(void *arg)
-{
-    bmHelper* obj = (bmHelper*)arg;
-    QString tip = QString("退出程序请按ctrl+t, ctrl加方向键控制音量和语速, 大小写切换键播报敌人信息, F1,开启自动提醒,F2,切换提醒模式,F3,缩短提醒间隔,F4增加提醒间隔, ctrl加 西,保存角色位置, ctrl加V,传送到保存的位置, Z,血量信息,X,蓝量信息,西,异常状态信息, 退出程序请按ctrl+t");
-    obj->speaker->playInternal(tip);
-
-}
-
-void getEnemyDelta(void* arg)
-{
-    bmHelper* obj = (bmHelper*)arg;
-    QString tip = "";
-
-    tip = QString("距离: %1, 血量: %2").arg((int)(CommonData::enemyInfo.enemyInfo.enemyDelta)).arg(CommonData::enemyInfo.enemyInfo.playerHp);
-    obj->speaker->playInternal(tip);
 
 }
 
@@ -440,34 +330,6 @@ namespace mPetConfig {
 } /* mPetConfig */
 
 } /* mPet */
-
-static void quit(void* arg) {
-    bmHelper* obj = (bmHelper*)arg;
-    obj->speaker->playInternal("已退出程序");
-    
-    QTimer::singleShot(1000, [obj]() {
-        obj->trayIcon->setVisible(false);
-        obj->quitAll = true;
-        QApplication::quit();
-        std::exit(0);
-    });
-    
-   
-    
-    
-}
-
-static void autoAttentionSwitch(void* arg) {
-    bmHelper* obj = (bmHelper*)arg;
-    obj->autoAttention = !obj->autoAttention;
-    if(obj->autoAttention)
-        obj->speaker->playInternal("开启提醒");
-    else {
-        obj->speaker->playInternal("关闭提醒");
-    }
-}
-
-
 
 
 void bmHelper::autoInfoAttentionThread()
@@ -539,58 +401,7 @@ void bmHelper::importantInfoThread()
 
 }
 
-static void autoAttentionModeSwitch(void* arg)
-{
-    bmHelper* obj = (bmHelper*)arg;
-    QString tip;
-    if (obj->attentionMode + 1 > 2) {
-        obj->attentionMode = 0;
-    }
-    else {
-        obj->attentionMode++;
-    }
-    if (obj->attentionMode == 0) {
-        tip = QString("敌方提醒");
-    }
-    else if (obj->attentionMode == 1) {
-        tip = QString("自身提醒");
-    }
-    else if (obj->attentionMode == 2) {
-        tip = QString("双方提醒");
-    }
-    obj->speaker->playInternal(tip);
-}
 
-static void autoAttentionIncrease(void* arg) {
-    bmHelper* obj = (bmHelper*)arg;
-    QString tip;
-
-    if (obj->autoAttentionPeriod + 1000 >= 20000)
-        obj->autoAttentionPeriod = 20000;
-    else
-        obj->autoAttentionPeriod += 1000;
-
-    tip = QString("提醒间隔: %1 秒").arg(obj->autoAttentionPeriod / 1000);
-    obj->speaker->playInternal(tip);
-
-}
-
-static void autoAttentionDecrease(void* arg) {
-    bmHelper* obj = (bmHelper*)arg;
-    QString tip;
-
-    if (obj->autoAttentionPeriod - 1000 <= 0)
-        obj->autoAttentionPeriod = 1000;
-    else
-        obj->autoAttentionPeriod -= 1000;
-
-    tip = QString("提醒间隔: %1 秒").arg(obj->autoAttentionPeriod / 1000);
-    obj->speaker->playInternal(tip);
-
-    
-        
-    
-}
 bmHelper::bmHelper(QWidget *parent)
     : QWidget(parent), attentionMode(0)
 {
@@ -662,39 +473,197 @@ bmHelper::bmHelper(QWidget *parent)
     this->autoAttention = false;
     this->autoAttentionPeriod = 2000;
     QString tip;
-    key = new keyMgr();
-    speaker = new spkMgr();
-    server = new MocIPC::IPCServer();
-    globalSpeaker = speaker;
+    keyMgr = std::make_shared<KeyMgr>();
+    speaker = std::make_shared<SpkMgr>();
+    server = std::make_shared<MocIPC::IPCServer>();
+
     server->registerRecvHOOK(testRecv);
-
-    key->bindKeys({ VK_CONTROL, 'C' }, savePositionCallback, this);
-    key->bindKeys({ VK_CONTROL, 'V' }, setPositionCallback, this);
-    key->bindKeys({ VK_CONTROL, VK_SHIFT, 'D' }, &bmHelper::playReadme, this);
-
-    key->bindKeys({ VK_CONTROL, VK_LEFT }, &decreaseVolume, this);
-    key->bindKeys({ VK_CONTROL, VK_RIGHT }, &increaseVolume, this);
-    key->bindKeys({ VK_CONTROL, VK_DOWN }, &decreaseSpeed, this);
-    key->bindKeys({ VK_CONTROL, VK_UP }, &increaseSpeed, this);
-
-    key->bindKeys({ VK_CONTROL, 'T' }, &quit, this);
     
-    key->bindKeys({ VK_F1 }, &autoAttentionSwitch, this);
-    key->bindKeys({ VK_F2 }, &autoAttentionModeSwitch, this);
-    key->bindKeys({ VK_F3 }, &autoAttentionDecrease, this);
-    key->bindKeys({ VK_F4 }, &autoAttentionIncrease, this);
-    
-    bind_playerInfo_param[0].obj = this;
-    bind_playerInfo_param[1].obj = this;
-    bind_playerInfo_param[2].obj = this;
-    bind_playerInfo_param[0].number = 0;
-    bind_playerInfo_param[1].number = 1;
-    bind_playerInfo_param[2].number = 2;
-    key->bindKeys({ 'Z' }, playInfoNotify, &bind_playerInfo_param[0]);
-    key->bindKeys({ 'X' }, playInfoNotify, &bind_playerInfo_param[1]);
-    key->bindKeys({ 'C' }, playInfoNotify, &bind_playerInfo_param[2]);
 
-    key->bindKeys({ VK_CAPITAL }, getEnemyDelta, this);
+    keyMgr->bindKeys({ VK_CONTROL, 'C' }, std::function<void()>([&]() {
+        if (!speaker)
+            return;
+        speaker->playInternal("已保存当前位置");
+        CommonData::config.targetPlayerLocation = CommonData::locationBuffer.playerLocationInfo.Location;
+        printf("event: %d, received: %.05f, %.05f, %.05f\n", static_cast<int>(CommonData::locationBuffer.event), CommonData::locationBuffer.playerLocationInfo.Location.X, CommonData::locationBuffer.playerLocationInfo.Location.Y, CommonData::locationBuffer.playerLocationInfo.Location.Z);
+        printf("save position pressed!");
+    }));
+
+
+
+
+    keyMgr->bindKeys({ VK_CONTROL, 'V' }, std::function([&]() {
+
+        HANDLE hProcess = nullptr;
+        if (!speaker || !server)
+            return;
+        hProcess = findProcess((LPWSTR)L"b1-Win64-Shipping.exe");
+        if (hProcess && CommonData::gameStatus.gameInited) {
+            CommonData::gameInfo_t send(CommonData::event_t::EVENT_PLAYER_LOCATION_SET);
+            send.targetPlayerLocation = CommonData::config.targetPlayerLocation;
+
+            server->write((void*)&send, sizeof(CommonData::gameInfo_t));
+
+            speaker->playInternal("已传送至保存的位置");
+            printf("set position pressed!");
+        }
+        else {
+            if (!CommonData::gameStatus.gameInited && hProcess) {
+                speaker->playInternal("未进入游戏世界，无法传送");
+            }
+            else {
+                speaker->playInternal("未检测到游戏, 毛都获取不到啊");
+            }
+
+        }
+
+    }));
+
+    keyMgr->bindKeys({ VK_CONTROL, VK_SHIFT, 'D' }, std::function([]() {
+        if (!speaker)
+            return;
+        QString tip = QString("退出程序请按ctrl+t, ctrl加方向键控制音量和语速, 大小写切换键播报敌人信息, F1,开启自动提醒,F2,切换提醒模式,F3,缩短提醒间隔,F4增加提醒间隔, ctrl加 西,保存角色位置, ctrl加V,传送到保存的位置, Z,血量信息,X,蓝量信息,西,异常状态信息, 退出程序请按ctrl+t");
+        speaker->playInternal(tip);
+
+    }));
+
+    
+    keyMgr->bindKeys({ VK_CONTROL, VK_LEFT }, std::function<void()>([&]() {
+        speaker->setVolume(false);
+    }));
+    speaker->setVolume(true);
+    keyMgr->bindKeys({ VK_CONTROL, VK_RIGHT }, std::function<void()>([&]() {
+        speaker->setVolume(false);
+    }));
+    
+    keyMgr->bindKeys({ VK_CONTROL, VK_DOWN }, std::function<void()>([&]() {
+        speaker->setSpeed(false);
+    }));
+    
+    keyMgr->bindKeys({ VK_CONTROL, VK_UP }, std::function<void()>([&]() {
+        speaker->setSpeed(true);
+    }));
+
+    
+
+
+    keyMgr->bindKeys({ VK_CONTROL, 'T' }, std::function<void()>([&]() {
+        speaker->playInternal("已退出程序");
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        trayIcon->setVisible(false);
+        quitAll = true;
+        QApplication::quit();
+    }));
+    
+    
+
+
+    keyMgr->bindKeys({ VK_F1 }, std::function<void()>([&]() {
+        autoAttention = !autoAttention;
+        if (autoAttention)
+            speaker->playInternal("开启提醒");
+        else {
+            speaker->playInternal("关闭提醒");
+        }
+    }));
+
+   
+
+
+
+    keyMgr->bindKeys({ VK_F2 }, std::function<void()>([&]() {
+        QString tip;
+        if (attentionMode + 1 > 2) {
+            attentionMode = 0;
+        }
+        else {
+            attentionMode++;
+        }
+        if (attentionMode == 0) {
+            tip = QString("敌方提醒");
+        }
+        else if (attentionMode == 1) {
+            tip = QString("自身提醒");
+        }
+        else if (attentionMode == 2) {
+            tip = QString("双方提醒");
+        }
+        speaker->playInternal(tip);
+    }));
+
+    
+
+
+    keyMgr->bindKeys({ VK_F3 }, std::function<void()>([&]() {
+        QString tip;
+
+        if (autoAttentionPeriod - 1000 <= 0)
+            autoAttentionPeriod = 1000;
+        else
+            autoAttentionPeriod -= 1000;
+
+        tip = QString("提醒间隔: %1 秒").arg(autoAttentionPeriod / 1000);
+        speaker->playInternal(tip);
+    }));
+
+
+    
+
+
+    keyMgr->bindKeys({ VK_F4 }, std::function<void()>([&]() {
+        QString tip;
+
+        if (autoAttentionPeriod + 1000 >= 20000)
+            autoAttentionPeriod = 20000;
+        else
+            autoAttentionPeriod += 1000;
+
+        tip = QString("提醒间隔: %1 秒").arg(autoAttentionPeriod / 1000);
+        speaker->playInternal(tip);
+    }));
+    
+    
+    std::function infoFunc = std::function<void(int)>([&](int number) {
+        QString tip;
+        if (number == 0) {
+            tip = QString("血量: %1, 血瓶: %2") \
+                .arg(CommonData::infoBuffer.playerInfo.playerHp).arg(CommonData::infoBuffer.playerInfo.playerBloodButton);
+        }
+        else if (number == 1) {
+            tip = QString("灵力: %1, 蓝条: %2") \
+                .arg(CommonData::infoBuffer.playerInfo.playerStamina).arg(CommonData::infoBuffer.playerInfo.playerMp);
+        }
+        else if (number == 2) {
+            QString buffer;
+            if (CommonData::infoBuffer.playerInfo.playerBurn)
+                buffer = "烧伤";
+            else if (CommonData::infoBuffer.playerInfo.playerFreeze)
+                buffer = "冻结";
+            else if (CommonData::infoBuffer.playerInfo.playerPoison)
+                buffer = "中毒";
+            else if (CommonData::infoBuffer.playerInfo.playerThunder)
+                buffer = "麻痹";
+            else {
+                buffer = "没异常啊卧槽";
+            }
+            tip = QString("能量: %1, 异常: %2") \
+                .arg(CommonData::infoBuffer.playerInfo.playerEnergy).arg(buffer);
+        }
+
+
+        speaker->playInternal(tip);
+    });
+    keyMgr->bindKeys({ 'Z' }, infoFunc, 0);
+    keyMgr->bindKeys({ 'X' }, infoFunc, 1);
+    keyMgr->bindKeys({ 'C' }, infoFunc, 2);
+   
+
+    keyMgr->bindKeys({ VK_CAPITAL }, std::function<void()>([&]() {
+        QString tip = "";
+
+        tip = QString("距离: %1, 血量: %2").arg((int)(CommonData::enemyInfo.enemyInfo.enemyDelta)).arg(CommonData::enemyInfo.enemyInfo.playerHp);
+        speaker->playInternal(tip);
+    }));
 
     this->speaker->setSpeed(20);
     tip = QString("初始化环境成功, 按下 %1 + %2 + %3 阅读使用说明, control + T退出程序") \
