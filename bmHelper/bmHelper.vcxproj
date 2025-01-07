@@ -135,6 +135,7 @@
     <ClCompile Include="..\SDK\SDK\Basic.cpp" />
     <ClCompile Include="..\SDK\SDK\CoreUObject_functions.cpp" />
     <ClCompile Include="..\SDK\SDK\Engine_functions.cpp" />
+    <ClCompile Include="KVMgr\KVMgr.cpp" />
     <ClCompile Include="MapMgr\MapMgr.cpp" />
     <ClCompile Include="SpkMgr\SpkMgr.cpp" />
     <QtRcc Include="bmHelper.qrc" />
@@ -143,6 +144,7 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="KVMgr\KVMgr.h" />
     <ClInclude Include="SpkMgr\SpkMgr.h" />
     <QtMoc Include="bmHelper.h" />
     <ClInclude Include="..\common\common.h" />

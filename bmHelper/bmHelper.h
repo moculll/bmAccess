@@ -6,6 +6,7 @@
 #include "SpkMgr/SpkMgr.h"
 #include "KeyMgr/KeyMgr.h"
 #include "MapMgr/MapMgr.h"
+#include "KVMgr/KVMgr.h"
 #include "mocIPC.h"
 #include "mGameAudio/mGameAudio.h"
 class bmHelper : public QWidget

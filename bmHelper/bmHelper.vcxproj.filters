@@ -24,6 +24,12 @@
     <Filter Include="SpkMgr">
       <UniqueIdentifier>{669908d5-7102-4249-80ae-52d135cb5456}</UniqueIdentifier>
     </Filter>
+    <Filter Include="MapMgr">
+      <UniqueIdentifier>{6978a402-742b-4894-ab2e-8fd54ebf8c3f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="KVMgr">
+      <UniqueIdentifier>{260a20c8-c5b8-44c1-8cd5-197a6be1bebf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="bmHelper.qrc">
@@ -49,11 +55,14 @@
     <ClCompile Include="..\SDK\SDK\Engine_functions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MapMgr\MapMgr.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="SpkMgr\SpkMgr.cpp">
       <Filter>SpkMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="MapMgr\MapMgr.cpp">
+      <Filter>MapMgr</Filter>
+    </ClCompile>
+    <ClCompile Include="KVMgr\KVMgr.cpp">
+      <Filter>KVMgr</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -63,11 +72,14 @@
     <ClInclude Include="..\json\json.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MapMgr\MapMgr.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="SpkMgr\SpkMgr.h">
       <Filter>SpkMgr</Filter>
+    </ClInclude>
+    <ClInclude Include="MapMgr\MapMgr.h">
+      <Filter>MapMgr</Filter>
+    </ClInclude>
+    <ClInclude Include="KVMgr\KVMgr.h">
+      <Filter>KVMgr</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
