@@ -8,8 +8,11 @@ SpkMgr::SpkMgr()
 {
     this->speed = 20;
     this->volume = 70;
-    speaker = new QTextToSpeech();
-    speaker->setLocale(QLocale::Chinese);
+    speaker = std::make_shared<QTextToSpeech>();
+
+    
+
+    speaker->setLocale(QLocale::English);
     speaker->setRate((float)this->speed / 100.0f);
     speaker->setRate((float)this->volume / 100.0f);
     
@@ -20,15 +23,12 @@ SpkMgr::SpkMgr()
 }
 
 
-SpkMgr::~SpkMgr() {
-    delete speaker;
-}
 
 void SpkMgr::processQueue() {
     if (!textQueue.empty() && speaker->state() == QTextToSpeech::Ready) {
         currentText = textQueue.front();
         textQueue.pop();
-        QMetaObject::invokeMethod(speaker, "say", Qt::QueuedConnection, Q_ARG(QString, currentText));
+        QMetaObject::invokeMethod(speaker.get(), "say", Qt::QueuedConnection, Q_ARG(QString, currentText));
     }
 }
 
@@ -39,16 +39,16 @@ void SpkMgr::playThreadFunc(const wchar_t* targetText)
 
 }
 
-void SpkMgr::playInternal(QString& targetText)
+void SpkMgr::playInternal(QString targetText)
 {
     
-    QMetaObject::invokeMethod(speaker,
+    QMetaObject::invokeMethod(speaker.get(),
         "say",
         Qt::QueuedConnection,
         Q_ARG(QString, targetText));
 }
 
-void SpkMgr::playTextBlock(QString& targetText)
+void SpkMgr::playTextBlock(QString targetText)
 {
     if (speaker->state() == QTextToSpeech::Speaking) {
         if (targetText != currentText) {
@@ -57,42 +57,26 @@ void SpkMgr::playTextBlock(QString& targetText)
         return;
     }
     currentText = targetText;
-    QMetaObject::invokeMethod(speaker,
+    QMetaObject::invokeMethod(speaker.get(),
         "say",
         Qt::QueuedConnection,
         Q_ARG(QString, targetText));
 
 }
 
-void SpkMgr::playInternal(const char* targetText)
-{
-    QMetaObject::invokeMethod(speaker,
-        "say",
-        Qt::QueuedConnection,
-        Q_ARG(QString, targetText));
-}
 
-void SpkMgr::play(QString &targetText)
+
+void SpkMgr::play(QString targetText)
 {
     /*speaker->say(targetText);*/
     if (speaker->state() == QTextToSpeech::Speaking)
         return;
-    QMetaObject::invokeMethod(speaker,
+    QMetaObject::invokeMethod(speaker.get(),
         "say",
         Qt::QueuedConnection,
         Q_ARG(QString, targetText));
 }
 
-void SpkMgr::play(const char *targetText)
-{
-    /*speaker->say(targetText);*/
-    if (speaker->state() == QTextToSpeech::Speaking)
-        return;
-    QMetaObject::invokeMethod(speaker,
-        "say",
-        Qt::QueuedConnection,
-        Q_ARG(QString, targetText));
-}
 
 void SpkMgr::setSpeed(bool direction)
 {
@@ -102,9 +86,18 @@ void SpkMgr::setSpeed(bool direction)
 
 void SpkMgr::setSpeed(int speed)
 {
+    QString tip;
     this->speed = speed;
     speaker->setRate((float)speed / 100.0f);
-    QString tip = QString("当前语速: %1").arg(speed);
+    if (speaker->locale() == QLocale::Chinese) {
+        tip = QString("当前语速: %1").arg(speed);
+    }
+    else if (speaker->locale() == QLocale::English) {
+        tip = QString("speed: %1").arg(speed);
+    }
+    else {
+        tip = QString("speed: %1").arg(speed);
+    }
     this->playInternal(tip);
 }
 
@@ -116,8 +109,18 @@ void SpkMgr::setVolume(bool direction)
 
 void SpkMgr::setVolume(int volume)
 {
+    QString tip;
     this->volume = volume;
     this->speaker->setVolume((float)volume / 100.0f);
-    QString tip = QString("当前音量: %1").arg(volume);
+    
+    if (speaker->locale() == QLocale::Chinese) {
+        tip = QString("当前音量: %1").arg(volume);
+    }
+    else if (speaker->locale() == QLocale::English) {
+        tip = QString("volume: %1").arg(volume);
+    }
+    else {
+        tip = QString("volume: %1").arg(volume);
+    }
     this->playInternal(tip);
 }

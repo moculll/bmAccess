@@ -18,8 +18,8 @@ void KVMgr::testFunc()
     kvmgr->init("test.json");
     kvmgr->debug_print();
     std::vector<std::string> replacements = { "Ctrl", "Alt", "Del", "Esc", "F4" };
-    DEBUG_PRINT("get value: %s", kvmgr->get("test1", "initTips").c_str());
-    std::string replacedTips = KVMgr::transfer(kvmgr->get("test1", "initTips").c_str(), replacements, "%%");
+    DEBUG_PRINT("get value: %s", kvmgr->getKV("test1", "initTips").c_str());
+    std::string replacedTips = KVMgr::transfer(kvmgr->getKV("test1", "initTips").c_str(), replacements, "%%");
     DEBUG_PRINT("replacedTips: %s", replacedTips.c_str());
     system("pause");
 }

@@ -9,6 +9,23 @@
 #include "KVMgr/KVMgr.h"
 #include "mocIPC.h"
 #include "mGameAudio/mGameAudio.h"
+
+/* gif icon */
+namespace mPet {
+namespace mPetConfig {
+constexpr int mMaxScaleWidth = 800;
+constexpr int mMaxScaleHeight = 600;
+
+constexpr int mMinScaleWidth = 128;
+constexpr int mMinScaleHeight = 256;
+
+constexpr int mDefaultScaleSize = 256;
+
+} /* mPetConfig */
+
+} /* mPet */
+
+
 class bmHelper : public QWidget
 {
     Q_OBJECT
@@ -17,14 +34,22 @@ public:
     bmHelper(QWidget *parent = nullptr);
     ~bmHelper()
     {
-        delete mPetMovie;
-        delete trayIcon;
+
     }
-    std::shared_ptr<BmMapMgr> mapMgr;
+    inline static std::shared_ptr<BmMapMgr> mapMgr;
     inline static std::shared_ptr<SpkMgr> speaker;
     std::shared_ptr<KeyMgr> keyMgr;
     std::shared_ptr<MocIPC::IPCServer> server;
-    QSystemTrayIcon* trayIcon;
+    std::shared_ptr<KVMgr> kvMgr;
+    
+    std::vector<std::string> languageSupport;
+    std::string language;
+
+    std::shared_ptr<QSystemTrayIcon> trayIcon;
+    std::shared_ptr<QMenu> trayIconMenu;
+    std::shared_ptr<QAction> quitAction;
+   
+
     bool injected;
     bool autoAttention;
     int autoAttentionPeriod;
@@ -39,8 +64,8 @@ public:
     virtual void mouseReleaseEvent(QMouseEvent* event) override;
     virtual void mousePressEvent(QMouseEvent* event) override;
 private:
-    QMovie* mPetMovie;
-    
+    std::shared_ptr<QMovie> mPetMovie;
+
     bool mDragging;
     QPoint mObjetCurrentPos;
     QPoint mDraggingStartPos;

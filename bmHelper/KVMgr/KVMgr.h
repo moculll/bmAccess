@@ -1,11 +1,12 @@
 #pragma once
 #include "json/json.hpp"
-
+#include <vector>
+#include <map>
 class KVMgr {
 public:
     KVMgr() {}
 
-    std::string get(std::string group, std::string key)
+    std::string getKV(std::string group, std::string key)
     {
         auto it = kvStorge.find(group);
         if (it == kvStorge.end()) {
@@ -15,6 +16,15 @@ public:
         if (itd == kvStorge[group].end())
             return "";
         return kvStorge[group][key];
+    }
+
+    std::vector<std::string> getOuterKeys()
+    {
+        std::vector<std::string> ret;
+        for (const auto& it : kvStorge) {
+            ret.emplace_back(it.first);
+        }
+        return ret;
     }
 
     bool updateStorge()
@@ -46,7 +56,7 @@ public:
 
     bool init(std::string jsonPath);
 
-    static std::string transfer(const std::string& input, const std::vector<std::string>& replacements, const std::string keyCode = "%%") {
+    static std::string transfer(const std::string& input, std::vector<std::string> replacements, const std::string keyCode = "%%") {
         std::string result = input;
         size_t pos = 0;
         int index = 1;

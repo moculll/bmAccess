@@ -11,112 +11,6 @@
 #include <QTimer>
 #include <Windows.h>
 
-HANDLE findProcess(WCHAR* processName)
-{
-    HANDLE hProcessSnap;
-    HANDLE hProcess;
-    PROCESSENTRY32 pe32;
-
-    // Take a snapshot of all processes in the system.
-    hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-    if (hProcessSnap == INVALID_HANDLE_VALUE) {
-        printf("[---] Could not create snapshot.\n");
-    }
-
-    // Set the size of the structure before using it.
-    pe32.dwSize = sizeof(PROCESSENTRY32);
-
-    // Retrieve information about the first process,
-    // and exit if unsuccessful
-    if (!Process32First(hProcessSnap, &pe32)) {
-
-        CloseHandle(hProcessSnap);
-        return FALSE;
-    }
-
-    // Now walk the snapshot of processes, and
-    // display information about each process in turn
-    do {
-
-        if (!wcscmp(pe32.szExeFile, processName)) {
-            wprintf(L"[+] The process %s was found in memory.\n", pe32.szExeFile);
-
-            hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pe32.th32ProcessID);
-            if (hProcess != NULL) {
-                return hProcess;
-            }
-            else {
-                wprintf(L"[---] Failed to open process %s.\n", pe32.szExeFile);
-                return NULL;
-
-            }
-        }
-
-    } while (Process32Next(hProcessSnap, &pe32));
-
-    wprintf(L"[---] %s has not been loaded into memory, aborting.\n", processName);
-    return NULL;
-}
-
-/* Load DLL into remote process
-* Gets LoadLibraryA address from current process, which is guaranteed to be same for single boot session across processes
-* Allocated memory in remote process for DLL path name
-* CreateRemoteThread to run LoadLibraryA in remote process. Address of DLL path in remote memory as argument
-*/
-BOOL loadRemoteDLL(HANDLE hProcess, const char* dllPath)
-{
-    printf("Enter any key to attempt DLL injection.");
-
-    // Allocate memory for DLL's path name to remote process
-    LPVOID dllPathAddressInRemoteMemory = VirtualAllocEx(hProcess, NULL, strlen(dllPath), MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-    if (dllPathAddressInRemoteMemory == NULL) {
-        printf("[---] VirtualAllocEx unsuccessful.\n");
-
-        getchar();
-        return FALSE;
-    }
-
-    // Write DLL's path name to remote process
-    BOOL succeededWriting = WriteProcessMemory(hProcess, dllPathAddressInRemoteMemory, dllPath, strlen(dllPath), NULL);
-
-    if (!succeededWriting) {
-        printf("[---] WriteProcessMemory unsuccessful.\n");
-
-        getchar();
-        return FALSE;
-    }
-    else {
-        // Returns a pointer to the LoadLibrary address. This will be the same on the remote process as in our current process.
-        LPVOID loadLibraryAddress = (LPVOID)GetProcAddress(GetModuleHandle(L"kernel32.dll"), "LoadLibraryA");
-        if (loadLibraryAddress == NULL) {
-            printf("[---] LoadLibrary not found in process.\n");
-
-            getchar();
-            return FALSE;
-        }
-        else {
-            HANDLE remoteThread = CreateRemoteThread(hProcess, NULL, NULL, (LPTHREAD_START_ROUTINE)loadLibraryAddress, dllPathAddressInRemoteMemory, NULL, NULL);
-            if (remoteThread == NULL) {
-                printf("[---] CreateRemoteThread unsuccessful.\n");
-
-                return FALSE;
-            }
-        }
-    }
-
-    CloseHandle(hProcess);
-    return TRUE;
-}
-
-
-struct bind_playerInfo_param_t {
-    void* obj;
-    int number;
-};
-bind_playerInfo_param_t bind_playerInfo_param[3] = {0};
-
-static void *globalMapMgr = nullptr;
-
 
 int my_wprintf(const wchar_t* format, ...)
 {
@@ -136,14 +30,12 @@ int my_wprintf(const wchar_t* format, ...)
 }
 std::string wcharToString(const std::wstring& wstr)
 {
-    // 获取所需缓冲区大小，以存储转换后的字符串，包括空终止字符。
     size_t len = 0;
     errno_t err = wcstombs_s(&len, nullptr, 0, wstr.c_str(), _TRUNCATE);
     if (err != 0) {
         throw std::runtime_error("wcstombs_s failed to calculate size");
     }
-    /*[Listener] : X: 6.668327, Y : -4.535948, Z : 0.045233
-[Emitter] : X : 4.631044, Y : -4.438434, Z : 0.204939*/
+
     std::vector<char> buffer(len);
     err = wcstombs_s(&len, buffer.data(), buffer.size(), wstr.c_str(), _TRUNCATE);
     if (err != 0) {
@@ -170,6 +62,105 @@ std::string charArrayToString(const char* data, size_t length)
 
     return wcharToString(wstr);
 }
+
+HANDLE findProcess(WCHAR* processName)
+{
+    HANDLE hProcessSnap;
+    HANDLE hProcess;
+    PROCESSENTRY32 pe32;
+
+    // Take a snapshot of all processes in the system.
+    hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (hProcessSnap == INVALID_HANDLE_VALUE) {
+        spdlog::info("[---] Could not create snapshot.");
+    }
+
+    // Set the size of the structure before using it.
+    pe32.dwSize = sizeof(PROCESSENTRY32);
+
+    // Retrieve information about the first process,
+    // and exit if unsuccessful
+    if (!Process32First(hProcessSnap, &pe32)) {
+
+        CloseHandle(hProcessSnap);
+        return FALSE;
+    }
+
+    // Now walk the snapshot of processes, and
+    // display information about each process in turn
+    do {
+
+        if (!wcscmp(pe32.szExeFile, processName)) {
+
+            spdlog::info("[+] The process {} was found in memory.", wcharToString(std::wstring(pe32.szExeFile)));
+
+            hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pe32.th32ProcessID);
+            if (hProcess != NULL) {
+                return hProcess;
+            }
+            else {
+                spdlog::info("[---] Failed to open process {}.", wcharToString(std::wstring(pe32.szExeFile)));
+                return NULL;
+
+            }
+        }
+
+    } while (Process32Next(hProcessSnap, &pe32));
+
+    spdlog::info("[---] {} has not been loaded into memory, aborting.", wcharToString(std::wstring(processName)));
+    return NULL;
+}
+
+/* Load DLL into remote process
+* Gets LoadLibraryA address from current process, which is guaranteed to be same for single boot session across processes
+* Allocated memory in remote process for DLL path name
+* CreateRemoteThread to run LoadLibraryA in remote process. Address of DLL path in remote memory as argument
+*/
+BOOL loadRemoteDLL(HANDLE hProcess, const char* dllPath)
+{
+    spdlog::info("Enter any key to attempt DLL injection.");
+
+    // Allocate memory for DLL's path name to remote process
+    LPVOID dllPathAddressInRemoteMemory = VirtualAllocEx(hProcess, NULL, strlen(dllPath), MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+    if (dllPathAddressInRemoteMemory == NULL) {
+        spdlog::info("[---] VirtualAllocEx unsuccessful.");
+
+        getchar();
+        return FALSE;
+    }
+
+    // Write DLL's path name to remote process
+    BOOL succeededWriting = WriteProcessMemory(hProcess, dllPathAddressInRemoteMemory, dllPath, strlen(dllPath), NULL);
+
+    if (!succeededWriting) {
+        spdlog::info("[---] WriteProcessMemory unsuccessful.");
+
+        getchar();
+        return FALSE;
+    }
+    else {
+        // Returns a pointer to the LoadLibrary address. This will be the same on the remote process as in our current process.
+        LPVOID loadLibraryAddress = (LPVOID)GetProcAddress(GetModuleHandle(L"kernel32.dll"), "LoadLibraryA");
+        if (loadLibraryAddress == NULL) {
+            spdlog::info("[---] LoadLibrary not found in process.");
+
+            getchar();
+            return FALSE;
+        }
+        else {
+            HANDLE remoteThread = CreateRemoteThread(hProcess, NULL, NULL, (LPTHREAD_START_ROUTINE)loadLibraryAddress, dllPathAddressInRemoteMemory, NULL, NULL);
+            if (remoteThread == NULL) {
+                spdlog::info("[---] CreateRemoteThread unsuccessful.");
+
+                return FALSE;
+            }
+        }
+    }
+
+    CloseHandle(hProcess);
+    return TRUE;
+}
+
 void testRecv(void* arg)
 {
     
@@ -180,13 +171,13 @@ void testRecv(void* arg)
     else if (MocIPC::getArg<CommonData::gameInfo_t*>(arg)->event & CommonData::event_t::EVENT_PLAYER_LOCATION) {
         
         memcpy(&CommonData::locationBuffer, MocIPC::getArg<CommonData::gameInfo_t*>(arg), sizeof(CommonData::gameInfo_t));
-        if(((BmMapMgr*)globalMapMgr)->getCurrentMapRange().empty())
+        if((bmHelper::mapMgr->getCurrentMapRange().empty()))
             return;
         DirectX::XMFLOAT3 newLocation = { static_cast<float>(CommonData::locationBuffer.playerLocationInfo.Location.X), static_cast<float>(CommonData::locationBuffer.playerLocationInfo.Location.Y), static_cast<float>(CommonData::locationBuffer.playerLocationInfo.Location.Z) };
         
         
-        auto locationMin = ((BmMapMgr*)globalMapMgr)->getCurrentMapRange()[0];
-        auto locationMax = ((BmMapMgr*)globalMapMgr)->getCurrentMapRange()[1];
+        auto locationMin = bmHelper::mapMgr->getCurrentMapRange()[0];
+        auto locationMax = bmHelper::mapMgr->getCurrentMapRange()[1];
         DirectX::XMFLOAT3 mapMinRange = { static_cast<float>(locationMin.X), static_cast<float>(locationMin.Y), static_cast<float>(locationMin.Z) };
         DirectX::XMFLOAT3 mapMaxRange = { static_cast<float>(locationMax.X), static_cast<float>(locationMax.Y), static_cast<float>(locationMax.Z) };
         DirectX::XMFLOAT3 newLocationForAudio = MGameAudio::posGame2Audio<DirectX::XMFLOAT3>(newLocation, mapMinRange, mapMaxRange);
@@ -194,32 +185,32 @@ void testRecv(void* arg)
         CommonData::locationBuffer.playerLocationInfo.OrientTop.Normalize();
         DirectX::XMFLOAT3 newOrientFront = { static_cast<float>(CommonData::locationBuffer.playerLocationInfo.Rotator.X), static_cast<float>(CommonData::locationBuffer.playerLocationInfo.Rotator.Y), static_cast<float>(CommonData::locationBuffer.playerLocationInfo.Rotator.Z) };
         DirectX::XMFLOAT3 newOrientTop = { static_cast<float>(CommonData::locationBuffer.playerLocationInfo.OrientTop.X), static_cast<float>(CommonData::locationBuffer.playerLocationInfo.OrientTop.Y), static_cast<float>(CommonData::locationBuffer.playerLocationInfo.OrientTop.Z) };
-        printf("[Listener]: X: %lf, Y: %lf, Z: %lf", newLocationForAudio.x, newLocationForAudio.y, newLocationForAudio.z);
+        spdlog::info("[Listener]: X: {}, Y: {}, Z: {}", newLocationForAudio.x, newLocationForAudio.y, newLocationForAudio.z);
         MGameAudio::updatePosition<MGameAudio::UpdatePositionParam::LISTENER>("test", newLocationForAudio, newOrientFront, newOrientTop);
     }
     else if (MocIPC::getArg<CommonData::gameInfo_t*>(arg)->event & CommonData::event_t::EVENT_ENEMY_MAP) {
         
         memcpy(&CommonData::enemyInfo, MocIPC::getArg<CommonData::gameInfo_t*>(arg), sizeof(CommonData::gameInfo_t));
         if(CommonData::enemyInfo.enemyInfo.playerHp)
-            printf("enemy: %.5f", CommonData::enemyInfo.enemyInfo.playerHp);
-        if(((BmMapMgr*)globalMapMgr)->getCurrentMapRange().empty())
+            spdlog::info("enemy: {:.5f}", CommonData::enemyInfo.enemyInfo.playerHp);
+        if(bmHelper::mapMgr->getCurrentMapRange().empty())
             return;
         DirectX::XMFLOAT3 newLocation = { static_cast<float>(CommonData::enemyInfo.enemyInfo.enemyLocation.X), static_cast<float>(CommonData::enemyInfo.enemyInfo.enemyLocation.Y), static_cast<float>(CommonData::enemyInfo.enemyInfo.enemyLocation.Z) };
-        auto locationMin = ((BmMapMgr*)globalMapMgr)->getCurrentMapRange()[0];
-        auto locationMax = ((BmMapMgr*)globalMapMgr)->getCurrentMapRange()[1];
+        auto locationMin = bmHelper::mapMgr->getCurrentMapRange()[0];
+        auto locationMax = bmHelper::mapMgr->getCurrentMapRange()[1];
         DirectX::XMFLOAT3 mapMinRange = { static_cast<float>(locationMin.X), static_cast<float>(locationMin.Y), static_cast<float>(locationMin.Z) };
         DirectX::XMFLOAT3 mapMaxRange = { static_cast<float>(locationMax.X), static_cast<float>(locationMax.Y), static_cast<float>(locationMax.Z) };
         DirectX::XMFLOAT3 newLocationForAudio = MGameAudio::posGame2Audio<DirectX::XMFLOAT3>(newLocation, mapMinRange, mapMaxRange);
-        printf("[Emitter]: X: %lf, Y: %lf, Z: %lf", newLocationForAudio.x, newLocationForAudio.y, newLocationForAudio.z);
+        spdlog::info("[Emitter]: X: {}, Y: {}, Z: {}", newLocationForAudio.x, newLocationForAudio.y, newLocationForAudio.z);
         MGameAudio::updatePosition<MGameAudio::UpdatePositionParam::EMITTER>("test", newLocationForAudio);
     }
     else if (MocIPC::getArg<CommonData::gameInfo_t*>(arg)->event & CommonData::event_t::EVENT_GAMEINITED_RESULT) {
         memcpy(&CommonData::gameStatus, MocIPC::getArg<CommonData::gameInfo_t*>(arg), sizeof(CommonData::gameInfo_t));
-        printf("gameStatus: %d\n", CommonData::gameStatus.gameInited);
+        spdlog::info("gameStatus: {}", CommonData::gameStatus.gameInited);
     }
     else if (MocIPC::getArg<CommonData::gameInfo_t*>(arg)->event & CommonData::event_t::EVENT_SPEAKERINFO) {
         memcpy(&CommonData::speakerInfo, MocIPC::getArg<CommonData::gameInfo_t*>(arg), sizeof(CommonData::gameInfo_t));
-        printf("received speaker info, length: %d\n", CommonData::speakerInfo.speakerInfo.length);
+        spdlog::info("received speaker info, length: {}", CommonData::speakerInfo.speakerInfo.length);
         
         
         /*for (int i = 0; i < CommonData::speakerInfo.speakerInfo.length / 2 - 1; i++) {
@@ -248,10 +239,10 @@ void testRecv(void* arg)
     else if (MocIPC::getArg<CommonData::gameInfo_t*>(arg)->event & CommonData::event_t::EVENT_LEVELINFO) {
         static bool result;
         memcpy(&CommonData::levelInfoBuffer, MocIPC::getArg<CommonData::gameInfo_t*>(arg), sizeof(CommonData::gameInfo_t));
-        if(((BmMapMgr *)globalMapMgr)->getCurrentMap() != CommonData::levelInfoBuffer.levelInfo.levelId) {
-            result = ((BmMapMgr*)globalMapMgr)->updateCurrentMap(CommonData::levelInfoBuffer.levelInfo.levelId, CommonData::locationBuffer.playerLocationInfo.Location.X, CommonData::locationBuffer.playerLocationInfo.Location.Y, CommonData::locationBuffer.playerLocationInfo.Location.Z);
+        if(bmHelper::mapMgr->getCurrentMap() != CommonData::levelInfoBuffer.levelInfo.levelId) {
+            result = bmHelper::mapMgr->updateCurrentMap(CommonData::levelInfoBuffer.levelInfo.levelId, CommonData::locationBuffer.playerLocationInfo.Location.X, CommonData::locationBuffer.playerLocationInfo.Location.Y, CommonData::locationBuffer.playerLocationInfo.Location.Z);
             
-            printf("update map[%d] result: %d\r\n", CommonData::levelInfoBuffer.levelInfo.levelId, result ? 1 : 0);
+            spdlog::info("update map[{}] result: {}", CommonData::levelInfoBuffer.levelInfo.levelId, result ? 1 : 0);
         }
         
     }
@@ -277,19 +268,15 @@ void bmHelper::injectThread(HANDLE &&hProcess)
         Sleep(1000);
     }
     
-    
 
     Sleep(17000);
     QString relativePath = ".\\bmDLL.dll";
     QString absolutePath = QFileInfo(relativePath).absoluteFilePath();
     BOOL injectSuccessful = loadRemoteDLL(hProcess, absolutePath.toStdString().c_str());
 
-    printf("[+] DLL injection successful! \n");
+    spdlog::info("[+] DLL injection successful!");
     
-
-    this->speaker->playInternal("正在加载游戏信息");
-    
-
+    speaker->playInternal(kvMgr->getKV(language, "gameDetectedTips"));
 
 }
 
@@ -317,40 +304,22 @@ void bmHelper::initHelperThread()
 
 }
 
-namespace mPet {
-namespace mPetConfig {
-    constexpr int mMaxScaleWidth = 800;
-    constexpr int mMaxScaleHeight = 600;
-
-    constexpr int mMinScaleWidth = 128;
-    constexpr int mMinScaleHeight = 256;
-
-    constexpr int mDefaultScaleSize = 256;
-
-} /* mPetConfig */
-
-} /* mPet */
-
-
 void bmHelper::autoInfoAttentionThread()
 {
     QString tip;
     while (1) {
         if (this->autoAttention) {
             if (this->attentionMode == 0) {
-                tip = QString("距离 %1 ,血量 %2") \
-                    .arg(CommonData::enemyInfo.enemyInfo.enemyDelta).arg(CommonData::enemyInfo.enemyInfo.playerHp);
-                this->speaker->play(tip);
+                speaker->play(kvMgr->transfer(kvMgr->getKV(language, "autoAttentionMode0Tips"), { std::to_string((int)(CommonData::enemyInfo.enemyInfo.enemyDelta)), std::to_string((int)(CommonData::enemyInfo.enemyInfo.playerHp)) }));
+
             }
             else if (this->attentionMode == 1) {
-                tip = QString("血量 %1 ,灵力 %2") \
-                    .arg(CommonData::infoBuffer.playerInfo.playerHp).arg(CommonData::infoBuffer.playerInfo.playerStamina);
-                this->speaker->play(tip);
+                speaker->play(kvMgr->transfer(kvMgr->getKV(language, "autoAttentionMode1Tips"), { std::to_string((int)(CommonData::infoBuffer.playerInfo.playerHp)), std::to_string((int)(CommonData::infoBuffer.playerInfo.playerStamina)) }));
+
             }
             else if (this->attentionMode == 2) {
-                tip = QString("敌方 %1, 自身 %2") \
-                    .arg(CommonData::enemyInfo.enemyInfo.playerHp).arg(CommonData::infoBuffer.playerInfo.playerHp);
-                this->speaker->play(tip);
+                speaker->play(kvMgr->transfer(kvMgr->getKV(language, "autoAttentionMode2Tips"), { std::to_string((int)(CommonData::enemyInfo.enemyInfo.playerHp)), std::to_string((int)(CommonData::infoBuffer.playerInfo.playerHp)) }));
+
             }
         }
         Sleep(this->autoAttentionPeriod);
@@ -358,7 +327,6 @@ void bmHelper::autoInfoAttentionThread()
 }
 void bmHelper::importantInfoThread()
 {
-    QString tip;
     static int notifyCount = 0;
     static bool normal = true;
     while (1) {
@@ -366,26 +334,23 @@ void bmHelper::importantInfoThread()
             if (CommonData::infoBuffer.playerInfo.playerBurn) {
                 notifyCount++;
                 normal = false;
-                tip = QString("注意,角色烧伤");
-                this->speaker->playInternal(tip);
+
+                speaker->playInternal(kvMgr->getKV(language, "burnDebuffTips"));
             }
             else if (CommonData::infoBuffer.playerInfo.playerFreeze) {
                 notifyCount++;
                 normal = false;
-                tip = QString("注意,角色冻结");
-                this->speaker->playInternal(tip);
+                speaker->playInternal(kvMgr->getKV(language, "freezeDebuffTips"));
             }
             else if (CommonData::infoBuffer.playerInfo.playerPoison) {
                 notifyCount++;
                 normal = false;
-                tip = QString("注意,角色中毒");
-                this->speaker->playInternal(tip);
+                speaker->playInternal(kvMgr->getKV(language, "poisonDebuffTips"));
             }
             else if (CommonData::infoBuffer.playerInfo.playerThunder) {
                 notifyCount++;
                 normal = false;
-                tip = QString("注意,角色麻痹");
-                this->speaker->playInternal(tip);
+                speaker->playInternal(kvMgr->getKV(language, "thunderDebuffTips"));
             }
             else {
                 normal = true;
@@ -409,18 +374,18 @@ bmHelper::bmHelper(QWidget *parent)
 
     QResource::registerResource("bmHelper.rcc");
     ui.setupUi(this);
-    spdlog::info("fucktest!");
-    trayIcon = new QSystemTrayIcon(this);
+    spdlog::info("BMHelper initialized.");
+    trayIcon = std::make_shared<QSystemTrayIcon>(this);
 
     trayIcon->setIcon(QIcon(":/res/bm.png"));
 
-    QMenu* trayIconMenu = new QMenu(this);
+    trayIconMenu = std::make_shared<QMenu>(this);
 
-    QAction* quitAction = new QAction("退出", this);
-    connect(quitAction, &QAction::triggered, qApp, &QApplication::quit);
-    trayIconMenu->addAction(quitAction);
+    quitAction = std::make_shared<QAction>("退出", this);
+    connect(quitAction.get(), &QAction::triggered, qApp, &QApplication::quit);
+    trayIconMenu->addAction(quitAction.get());
 
-    trayIcon->setContextMenu(trayIconMenu);
+    trayIcon->setContextMenu(trayIconMenu.get());
 
     trayIcon->show();
     /*Q_INIT_RESOURCE(bmHelper);*/
@@ -431,14 +396,14 @@ bmHelper::bmHelper(QWidget *parent)
 
     this->mDragging = false;
     QString resourcePath = ".\\bm.gif";
-    this->mPetMovie = new QMovie(resourcePath);
+    this->mPetMovie = std::make_shared<QMovie>(resourcePath);
     if (!this->mPetMovie->isValid()) {
-        std::cout << "GIF file is invalid!" << std::endl;
+        spdlog::info("GIF file is invalid!");
         resourcePath = ".\\bm.png";
-        this->mPetMovie = new QMovie(resourcePath);
+        this->mPetMovie = std::make_shared<QMovie>(resourcePath);
         if (!this->mPetMovie->isValid()) {
             resourcePath = ".\\bm.jpg";
-            this->mPetMovie = new QMovie(resourcePath);
+            this->mPetMovie = std::make_shared<QMovie>(resourcePath);
 
 
         }
@@ -447,7 +412,7 @@ bmHelper::bmHelper(QWidget *parent)
     }
     this->mPetMovie->setParent(this);
 
-    ui.mPetLabel->setMovie(mPetMovie);
+    ui.mPetLabel->setMovie(mPetMovie.get());
 
     ui.mPetLabel->setScaledContents(true);
     this->mPetMovie->start();
@@ -458,9 +423,7 @@ bmHelper::bmHelper(QWidget *parent)
 
     this->mPetWidthFactor = width / (height + width);
     this->mPetHeightFactor = height / (height + width);
-
-    qDebug() << "GIF Width:" << this->mPetWidthFactor << ", Height:" << this->mPetHeightFactor;
-
+    spdlog::info("GIF Width: {}, Height: {}", this->mPetWidthFactor, this->mPetHeightFactor);
 
     ui.mPetLabel->resize(mPet::mPetConfig::mDefaultScaleSize * this->mPetWidthFactor, mPet::mPetConfig::mDefaultScaleSize * this->mPetHeightFactor);
     ui.mPetLabel->setAlignment(Qt::AlignCenter);
@@ -472,10 +435,22 @@ bmHelper::bmHelper(QWidget *parent)
     this->injected = false;
     this->autoAttention = false;
     this->autoAttentionPeriod = 2000;
-    QString tip;
+
     keyMgr = std::make_shared<KeyMgr>();
     speaker = std::make_shared<SpkMgr>();
+    
+
     server = std::make_shared<MocIPC::IPCServer>();
+    kvMgr = std::make_shared<KVMgr>();
+    kvMgr->init("language.json");
+    languageSupport = kvMgr->getOuterKeys();
+    if(!languageSupport.empty())
+        language = languageSupport[0];
+    else {
+        language = "Chinese";
+    }
+    
+    speaker->setLanguage(language);
 
     server->registerRecvHOOK(testRecv);
     
@@ -483,13 +458,12 @@ bmHelper::bmHelper(QWidget *parent)
     keyMgr->bindKeys({ VK_CONTROL, 'C' }, std::function<void()>([&]() {
         if (!speaker)
             return;
-        speaker->playInternal("已保存当前位置");
+
+        speaker->playInternal(kvMgr->getKV(language, "savePosTips"));
         CommonData::config.targetPlayerLocation = CommonData::locationBuffer.playerLocationInfo.Location;
-        printf("event: %d, received: %.05f, %.05f, %.05f\n", static_cast<int>(CommonData::locationBuffer.event), CommonData::locationBuffer.playerLocationInfo.Location.X, CommonData::locationBuffer.playerLocationInfo.Location.Y, CommonData::locationBuffer.playerLocationInfo.Location.Z);
-        printf("save position pressed!");
+        spdlog::info("event: {}, received: {:.5f}, {:.5f}, {:.5f}", static_cast<int>(CommonData::locationBuffer.event), CommonData::locationBuffer.playerLocationInfo.Location.X, CommonData::locationBuffer.playerLocationInfo.Location.Y, CommonData::locationBuffer.playerLocationInfo.Location.Z);
+        spdlog::info("save position pressed!");
     }));
-
-
 
 
     keyMgr->bindKeys({ VK_CONTROL, 'V' }, std::function([&]() {
@@ -504,51 +478,54 @@ bmHelper::bmHelper(QWidget *parent)
 
             server->write((void*)&send, sizeof(CommonData::gameInfo_t));
 
-            speaker->playInternal("已传送至保存的位置");
-            printf("set position pressed!");
+            speaker->playInternal(kvMgr->getKV(language, "teleportTips"));
+            spdlog::info("set position pressed!");
         }
         else {
             if (!CommonData::gameStatus.gameInited && hProcess) {
-                speaker->playInternal("未进入游戏世界，无法传送");
+                speaker->playInternal(kvMgr->getKV(language, "tpNotInGameTips"));
             }
             else {
-                speaker->playInternal("未检测到游戏, 毛都获取不到啊");
+                speaker->playInternal(kvMgr->getKV(language, "tpGameProcessNotExistTips"));
             }
 
         }
 
     }));
 
-    keyMgr->bindKeys({ VK_CONTROL, VK_SHIFT, 'D' }, std::function([]() {
-        if (!speaker)
+    keyMgr->bindKeys({ VK_CONTROL, VK_SHIFT, 'D' }, std::function([&]() {
+        if (!speaker || !kvMgr)
             return;
-        QString tip = QString("退出程序请按ctrl+t, ctrl加方向键控制音量和语速, 大小写切换键播报敌人信息, F1,开启自动提醒,F2,切换提醒模式,F3,缩短提醒间隔,F4增加提醒间隔, ctrl加 西,保存角色位置, ctrl加V,传送到保存的位置, Z,血量信息,X,蓝量信息,西,异常状态信息, 退出程序请按ctrl+t");
-        speaker->playInternal(tip);
-
+        speaker->playInternal(kvMgr->transfer(kvMgr->getKV(language, "helperTips"), { "control", "T", "control", "方向键", "大小写切换键", "F1", "F2", "F3", "F4", "control", "西", "control", "V", "Z", "X", "西", "control", "T" }));
     }));
 
     
     keyMgr->bindKeys({ VK_CONTROL, VK_LEFT }, std::function<void()>([&]() {
-        speaker->setVolume(false);
+        if(speaker)
+            speaker->setVolume(false);
     }));
-    speaker->setVolume(true);
+    
     keyMgr->bindKeys({ VK_CONTROL, VK_RIGHT }, std::function<void()>([&]() {
-        speaker->setVolume(false);
+        if (speaker)
+            speaker->setVolume(true);
     }));
     
     keyMgr->bindKeys({ VK_CONTROL, VK_DOWN }, std::function<void()>([&]() {
-        speaker->setSpeed(false);
+        if (speaker)
+            speaker->setSpeed(false);
     }));
     
     keyMgr->bindKeys({ VK_CONTROL, VK_UP }, std::function<void()>([&]() {
-        speaker->setSpeed(true);
+        if (speaker)
+            speaker->setSpeed(true);
     }));
 
     
 
 
     keyMgr->bindKeys({ VK_CONTROL, 'T' }, std::function<void()>([&]() {
-        speaker->playInternal("已退出程序");
+        if(speaker)
+            speaker->playInternal(kvMgr->getKV(language, "exitTips"));
         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         trayIcon->setVisible(false);
         quitAll = true;
@@ -559,11 +536,13 @@ bmHelper::bmHelper(QWidget *parent)
 
 
     keyMgr->bindKeys({ VK_F1 }, std::function<void()>([&]() {
-        autoAttention = !autoAttention;
+        autoAttention ^= 1;
+        if (!speaker)
+            return;
         if (autoAttention)
-            speaker->playInternal("开启提醒");
+            speaker->playInternal(kvMgr->getKV(language, "openAutoAttentionTips"));
         else {
-            speaker->playInternal("关闭提醒");
+            speaker->playInternal(kvMgr->getKV(language, "closeAutoAttentionTips"));
         }
     }));
 
@@ -572,7 +551,6 @@ bmHelper::bmHelper(QWidget *parent)
 
 
     keyMgr->bindKeys({ VK_F2 }, std::function<void()>([&]() {
-        QString tip;
         if (attentionMode + 1 > 2) {
             attentionMode = 0;
         }
@@ -580,30 +558,27 @@ bmHelper::bmHelper(QWidget *parent)
             attentionMode++;
         }
         if (attentionMode == 0) {
-            tip = QString("敌方提醒");
+            speaker->playInternal(kvMgr->getKV(language, "autoAttentionMode0TitleTips"));
         }
         else if (attentionMode == 1) {
-            tip = QString("自身提醒");
+            speaker->playInternal(kvMgr->getKV(language, "autoAttentionMode1TitleTips"));
         }
         else if (attentionMode == 2) {
-            tip = QString("双方提醒");
+            speaker->playInternal(kvMgr->getKV(language, "autoAttentionMode2TitleTips"));
         }
-        speaker->playInternal(tip);
     }));
 
     
 
 
     keyMgr->bindKeys({ VK_F3 }, std::function<void()>([&]() {
-        QString tip;
 
         if (autoAttentionPeriod - 1000 <= 0)
             autoAttentionPeriod = 1000;
         else
             autoAttentionPeriod -= 1000;
+        speaker->playInternal(kvMgr->transfer(kvMgr->getKV(language, "autoAttentionPeriodTips"), { std::to_string(autoAttentionPeriod / 1000)}));
 
-        tip = QString("提醒间隔: %1 秒").arg(autoAttentionPeriod / 1000);
-        speaker->playInternal(tip);
     }));
 
 
@@ -611,47 +586,44 @@ bmHelper::bmHelper(QWidget *parent)
 
 
     keyMgr->bindKeys({ VK_F4 }, std::function<void()>([&]() {
-        QString tip;
 
         if (autoAttentionPeriod + 1000 >= 20000)
             autoAttentionPeriod = 20000;
         else
             autoAttentionPeriod += 1000;
 
-        tip = QString("提醒间隔: %1 秒").arg(autoAttentionPeriod / 1000);
-        speaker->playInternal(tip);
+        speaker->playInternal(kvMgr->transfer(kvMgr->getKV(language, "autoAttentionPeriodTips"), { std::to_string(autoAttentionPeriod / 1000) }));
     }));
     
     
     std::function infoFunc = std::function<void(int)>([&](int number) {
-        QString tip;
         if (number == 0) {
-            tip = QString("血量: %1, 血瓶: %2") \
-                .arg(CommonData::infoBuffer.playerInfo.playerHp).arg(CommonData::infoBuffer.playerInfo.playerBloodButton);
+            speaker->playInternal(kvMgr->transfer(kvMgr->getKV(language, "manuallyGetInfo0Tips"), { std::to_string((int)(CommonData::infoBuffer.playerInfo.playerHp)), std::to_string((int)(CommonData::infoBuffer.playerInfo.playerBloodButton)) }));
         }
         else if (number == 1) {
-            tip = QString("灵力: %1, 蓝条: %2") \
-                .arg(CommonData::infoBuffer.playerInfo.playerStamina).arg(CommonData::infoBuffer.playerInfo.playerMp);
+            speaker->playInternal(kvMgr->transfer(kvMgr->getKV(language, "manuallyGetInfo0Tips"), { std::to_string((int)(CommonData::infoBuffer.playerInfo.playerStamina)), std::to_string((int)(CommonData::infoBuffer.playerInfo.playerMp)) }));
+
         }
         else if (number == 2) {
-            QString buffer;
+            std::vector<std::string> ret;
+            ret.emplace_back(std::to_string(CommonData::infoBuffer.playerInfo.playerEnergy));
+
             if (CommonData::infoBuffer.playerInfo.playerBurn)
-                buffer = "烧伤";
+                ret.emplace_back(kvMgr->getKV(language, "burnDebuffTips"));
             else if (CommonData::infoBuffer.playerInfo.playerFreeze)
-                buffer = "冻结";
+                ret.emplace_back(kvMgr->getKV(language, "freezeDebuffTips"));
             else if (CommonData::infoBuffer.playerInfo.playerPoison)
-                buffer = "中毒";
+                ret.emplace_back(kvMgr->getKV(language, "poisonDebuffTips"));
             else if (CommonData::infoBuffer.playerInfo.playerThunder)
-                buffer = "麻痹";
+                ret.emplace_back(kvMgr->getKV(language, "thunderDebuffTips"));
             else {
-                buffer = "没异常啊卧槽";
+                ret.emplace_back(kvMgr->getKV(language, "manuallyGetInfoNoDebuffTips"));
             }
-            tip = QString("能量: %1, 异常: %2") \
-                .arg(CommonData::infoBuffer.playerInfo.playerEnergy).arg(buffer);
+
+            speaker->playInternal(kvMgr->transfer(kvMgr->getKV(language, "manuallyGetInfo2Tips"), ret));
+
         }
 
-
-        speaker->playInternal(tip);
     });
     keyMgr->bindKeys({ 'Z' }, infoFunc, 0);
     keyMgr->bindKeys({ 'X' }, infoFunc, 1);
@@ -659,17 +631,28 @@ bmHelper::bmHelper(QWidget *parent)
    
 
     keyMgr->bindKeys({ VK_CAPITAL }, std::function<void()>([&]() {
-        QString tip = "";
+        speaker->playInternal(kvMgr->transfer(kvMgr->getKV(language, "manuallyGetClosestEnemyInfoTips"), { std::to_string((int)(CommonData::enemyInfo.enemyInfo.enemyDelta)), std::to_string((int)(CommonData::enemyInfo.enemyInfo.playerHp)) }));
 
-        tip = QString("距离: %1, 血量: %2").arg((int)(CommonData::enemyInfo.enemyInfo.enemyDelta)).arg(CommonData::enemyInfo.enemyInfo.playerHp);
-        speaker->playInternal(tip);
     }));
+    keyMgr->bindKeys({ 'L' }, std::function<void()>([&]() {
+        for (auto it : languageSupport) {
+            if (language != it) {
+                speaker->setLanguage(it);
+                language = it;
+                break;
+            }
+                
+        }
+        
+        speaker->playInternal(kvMgr->transfer(kvMgr->getKV(language, "switchLanguageTips"), { language }));
+        spdlog::info(kvMgr->transfer(kvMgr->getKV(language, "switchLanguageTips"), { language }));
+
+    }));
+    
 
     this->speaker->setSpeed(20);
-    tip = QString("初始化环境成功, 按下 %1 + %2 + %3 阅读使用说明, control + T退出程序") \
-            .arg("control").arg("shift").arg("D");
-    speaker->playInternal(tip);
-
+    speaker->playInternal(kvMgr->transfer(kvMgr->getKV(language, "initTips"), { "control", "shift", "D", "control", "T", "L"}));
+    
  
     /*notifyThread(this);*/
     /*RemoteThreadInject32((LPWSTR)L"b1-Win64-Shipping.exe", (LPWSTR)L"D:\\WORK\\blackmyth\\dlltest\\x64\\Debug\\bmdll.dll");*/
@@ -688,7 +671,7 @@ bmHelper::bmHelper(QWidget *parent)
 
     mapMgr = std::make_shared<BmMapMgr>();
     mapMgr->init("bmmap.json");
-    globalMapMgr = mapMgr.get();
+    
     static std::thread testThread = std::thread([] () {
         MGameAudio::init();
         MGameAudio::createNewVoice("test", "test1.wav");
@@ -700,12 +683,12 @@ bmHelper::bmHelper(QWidget *parent)
     });
     testThread.detach();
     /*bool result = mapMgr->updateCurrentMap(30, 75001, 48001, -40000);
-    printf("update map result: %d", result ? 1 : 0);
+    spdlog::info("update map result: %d", result ? 1 : 0);
 
     for (int i = 0; i < 1000; i++) {
         BmMapMgr::levelUnit_t* unit = mapMgr->getUnit<BmMapMgr::PointDirection::NEXT>();
         if (unit) {
-            printf("get unit name: %s, location: [%d] [%d] [%d]\r\n", unit->pointName.c_str(), unit->point.X, unit->point.Y, unit->point.Z);
+            spdlog::info("get unit name: %s, location: [%d] [%d] [%d]\r\n", unit->pointName.c_str(), unit->point.X, unit->point.Y, unit->point.Z);
         }
     }
     
@@ -713,6 +696,8 @@ bmHelper::bmHelper(QWidget *parent)
         MGameAudio::runTestCase();
     });
     newthread.detach();*/
+    
+    
 }
 
 
