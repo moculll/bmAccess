@@ -173,7 +173,7 @@ void testRecv(void* arg)
         memcpy(&CommonData::locationBuffer, MocIPC::getArg<CommonData::gameInfo_t*>(arg), sizeof(CommonData::gameInfo_t));
         if((bmHelper::mapMgr->getCurrentMapRange().empty()))
             return;
-        DirectX::XMFLOAT3 newLocation = { static_cast<float>(CommonData::locationBuffer.playerLocationInfo.Location.X), static_cast<float>(CommonData::locationBuffer.playerLocationInfo.Location.Y), static_cast<float>(CommonData::locationBuffer.playerLocationInfo.Location.Z) };
+        DirectX::XMFLOAT3 newLocation = { static_cast<float>(CommonData::locationBuffer.playerLocationInfo.Location.X * 8), static_cast<float>(CommonData::locationBuffer.playerLocationInfo.Location.Y * 8), static_cast<float>(CommonData::locationBuffer.playerLocationInfo.Location.Z * 8) };
         
         
         auto locationMin = bmHelper::mapMgr->getCurrentMapRange()[0];
@@ -186,7 +186,7 @@ void testRecv(void* arg)
         DirectX::XMFLOAT3 newOrientFront = { static_cast<float>(CommonData::locationBuffer.playerLocationInfo.Rotator.X), static_cast<float>(CommonData::locationBuffer.playerLocationInfo.Rotator.Y), static_cast<float>(CommonData::locationBuffer.playerLocationInfo.Rotator.Z) };
         DirectX::XMFLOAT3 newOrientTop = { static_cast<float>(CommonData::locationBuffer.playerLocationInfo.OrientTop.X), static_cast<float>(CommonData::locationBuffer.playerLocationInfo.OrientTop.Y), static_cast<float>(CommonData::locationBuffer.playerLocationInfo.OrientTop.Z) };
         spdlog::info("[Listener]: X: {}, Y: {}, Z: {}", newLocationForAudio.x, newLocationForAudio.y, newLocationForAudio.z);
-        MGameAudio::updatePosition<MGameAudio::UpdatePositionParam::LISTENER>("test", newLocationForAudio, newOrientFront, newOrientTop);
+        MGameAudio::updatePosition<MGameAudio::UpdatePositionParam::LISTENER>("closestEnemy", newLocationForAudio, newOrientFront, newOrientTop);
     }
     else if (MocIPC::getArg<CommonData::gameInfo_t*>(arg)->event & CommonData::event_t::EVENT_ENEMY_MAP) {
         
@@ -195,14 +195,18 @@ void testRecv(void* arg)
             spdlog::info("enemy: {:.5f}", CommonData::enemyInfo.enemyInfo.playerHp);
         if(bmHelper::mapMgr->getCurrentMapRange().empty())
             return;
-        DirectX::XMFLOAT3 newLocation = { static_cast<float>(CommonData::enemyInfo.enemyInfo.enemyLocation.X), static_cast<float>(CommonData::enemyInfo.enemyInfo.enemyLocation.Y), static_cast<float>(CommonData::enemyInfo.enemyInfo.enemyLocation.Z) };
+        DirectX::XMFLOAT3 newLocation = { static_cast<float>(CommonData::enemyInfo.enemyInfo.Location.X * 8), static_cast<float>(CommonData::enemyInfo.enemyInfo.Location.Y * 8), static_cast<float>(CommonData::enemyInfo.enemyInfo.Location.Z * 8) };
         auto locationMin = bmHelper::mapMgr->getCurrentMapRange()[0];
         auto locationMax = bmHelper::mapMgr->getCurrentMapRange()[1];
         DirectX::XMFLOAT3 mapMinRange = { static_cast<float>(locationMin.X), static_cast<float>(locationMin.Y), static_cast<float>(locationMin.Z) };
         DirectX::XMFLOAT3 mapMaxRange = { static_cast<float>(locationMax.X), static_cast<float>(locationMax.Y), static_cast<float>(locationMax.Z) };
         DirectX::XMFLOAT3 newLocationForAudio = MGameAudio::posGame2Audio<DirectX::XMFLOAT3>(newLocation, mapMinRange, mapMaxRange);
+        CommonData::enemyInfo.enemyInfo.Rotator.Normalize();
+        CommonData::enemyInfo.enemyInfo.OrientTop.Normalize();
+        DirectX::XMFLOAT3 newOrientFront = { static_cast<float>(CommonData::enemyInfo.enemyInfo.Rotator.X), static_cast<float>(CommonData::enemyInfo.enemyInfo.Rotator.Y), static_cast<float>(CommonData::enemyInfo.enemyInfo.Rotator.Z) };
+        DirectX::XMFLOAT3 newOrientTop = { static_cast<float>(CommonData::enemyInfo.enemyInfo.OrientTop.X), static_cast<float>(CommonData::enemyInfo.enemyInfo.OrientTop.Y), static_cast<float>(CommonData::enemyInfo.enemyInfo.OrientTop.Z) };
         spdlog::info("[Emitter]: X: {}, Y: {}, Z: {}", newLocationForAudio.x, newLocationForAudio.y, newLocationForAudio.z);
-        MGameAudio::updatePosition<MGameAudio::UpdatePositionParam::EMITTER>("test", newLocationForAudio);
+        MGameAudio::updatePosition<MGameAudio::UpdatePositionParam::EMITTER>("closestEnemy", newLocationForAudio, newOrientFront, newOrientTop);
     }
     else if (MocIPC::getArg<CommonData::gameInfo_t*>(arg)->event & CommonData::event_t::EVENT_GAMEINITED_RESULT) {
         memcpy(&CommonData::gameStatus, MocIPC::getArg<CommonData::gameInfo_t*>(arg), sizeof(CommonData::gameInfo_t));
@@ -246,7 +250,13 @@ void testRecv(void* arg)
         }
         
     }
-    
+    else if (MocIPC::getArg<CommonData::gameInfo_t*>(arg)->event & CommonData::event_t::EVENT_DLL_EXIT_REQ) {
+        memcpy(&CommonData::gameStatus, MocIPC::getArg<CommonData::gameInfo_t*>(arg), sizeof(CommonData::gameInfo_t));
+        if (CommonData::gameStatus.dllExitReq) {
+            bmHelper::injected = false;
+        }
+
+    }
     /*printf("[post]event: %d, received: %.05f, %.05f, %.05f\n", static_cast<int>(CommonData::buffer.event), CommonData::buffer.playerLocation.X, CommonData::buffer.playerLocation.Y, CommonData::buffer.playerLocation.Z);
     if(CommonData::buffer.event & CommonData::event_t::EVENT_PLAYER_INFO) {
         printf("event: %d, received: %.05f, %.05f, %.05f\n", static_cast<int>(CommonData::buffer.event), CommonData::buffer.playerLocation.X, CommonData::buffer.playerLocation.Y, CommonData::buffer.playerLocation.Z);
@@ -288,11 +298,11 @@ void bmHelper::initHelperThread()
 
         hProcess = findProcess((LPWSTR)L"b1-Win64-Shipping.exe");
         if (!hProcess) {
-            this->injected = false; 
+            injected = false; 
         }
         else {
-            if (!this->injected) {
-                this->injected = true;
+            if (!injected) {
+                injected = true;
                 this->injectHelper = std::thread(&bmHelper::injectThread, this, std::move(hProcess));
                 this->injectHelper.join();
             }
@@ -432,7 +442,7 @@ bmHelper::bmHelper(QWidget *parent)
 
 
     this->quitAll = false;
-    this->injected = false;
+    injected = false;
     this->autoAttention = false;
     this->autoAttentionPeriod = 2000;
 
@@ -577,7 +587,10 @@ bmHelper::bmHelper(QWidget *parent)
             autoAttentionPeriod = 1000;
         else
             autoAttentionPeriod -= 1000;
-        speaker->playInternal(kvMgr->transfer(kvMgr->getKV(language, "autoAttentionPeriodTips"), { std::to_string(autoAttentionPeriod / 1000)}));
+
+        std::string tips = kvMgr->transfer(kvMgr->getKV(language, "autoAttentionPeriodTips"), { std::to_string(autoAttentionPeriod / 1000) });
+        /* cut 1 second(s) */
+        speaker->playInternal(tips.substr(0, language == "English" ? (autoAttentionPeriod == 1000 ? tips.size() - 1 : tips.size()) : tips.size()));
 
     }));
 
@@ -601,12 +614,12 @@ bmHelper::bmHelper(QWidget *parent)
             speaker->playInternal(kvMgr->transfer(kvMgr->getKV(language, "manuallyGetInfo0Tips"), { std::to_string((int)(CommonData::infoBuffer.playerInfo.playerHp)), std::to_string((int)(CommonData::infoBuffer.playerInfo.playerBloodButton)) }));
         }
         else if (number == 1) {
-            speaker->playInternal(kvMgr->transfer(kvMgr->getKV(language, "manuallyGetInfo0Tips"), { std::to_string((int)(CommonData::infoBuffer.playerInfo.playerStamina)), std::to_string((int)(CommonData::infoBuffer.playerInfo.playerMp)) }));
+            speaker->playInternal(kvMgr->transfer(kvMgr->getKV(language, "manuallyGetInfo1Tips"), { std::to_string((int)(CommonData::infoBuffer.playerInfo.playerStamina)), std::to_string((int)(CommonData::infoBuffer.playerInfo.playerMp)) }));
 
         }
         else if (number == 2) {
             std::vector<std::string> ret;
-            ret.emplace_back(std::to_string(CommonData::infoBuffer.playerInfo.playerEnergy));
+            ret.emplace_back(std::to_string(int(CommonData::infoBuffer.playerInfo.playerEnergy)));
 
             if (CommonData::infoBuffer.playerInfo.playerBurn)
                 ret.emplace_back(kvMgr->getKV(language, "burnDebuffTips"));
@@ -672,15 +685,16 @@ bmHelper::bmHelper(QWidget *parent)
     mapMgr = std::make_shared<BmMapMgr>();
     mapMgr->init("bmmap.json");
     
+    /* MGameAudio Initialization can't be called from qt thread */
     static std::thread testThread = std::thread([] () {
         MGameAudio::init();
-        MGameAudio::createNewVoice("test", "test1.wav");
-        while(1) {
-            MGameAudio::playAudio("test", true);
-            std::this_thread::sleep_for(std::chrono::milliseconds(10 * 1000));
-        }
+        MGameAudio::createNewVoice("closestEnemy", "cloestEnemy_01.wav");
 
     });
+    
+    keyMgr->bindKeys({ VK_F10 }, std::function<void()>([&]() {
+        MGameAudio::playAudio("closestEnemy", true);
+    }));
     testThread.detach();
     /*bool result = mapMgr->updateCurrentMap(30, 75001, 48001, -40000);
     spdlog::info("update map result: %d", result ? 1 : 0);

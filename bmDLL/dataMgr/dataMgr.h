@@ -154,9 +154,9 @@ struct blackMyth {
 	struct enemyAttr {
 		float delta;
 		float Hp;
-		float X;
-		float Y;
-		float Z;
+		SDK::FVector Location;
+		SDK::FVector Rotator;
+		SDK::FVector OrientTop;
 	};
 
 	
@@ -363,6 +363,9 @@ struct blackMyth {
 					auto location2 = playerCharacter->K2_GetActorLocation();
 					float result = static_cast<float>(sqrt((location.X - location2.X) * (location.X - location2.X) + (location.Y - location2.Y) * (location.Y - location2.Y) + (location.Z - location2.Z) * (location.Z - location2.Z)));
 					float enemyHp = (sdkMgr.get<SDK::UBGUFunctionLibraryCS*>("BGULib"))->BGUGetFloatAttr(aiCharacter, SDK::EBGUAttrFloat::Hp);
+
+					auto rotator = aiCharacter->GetActorForwardVector();
+					auto orientTop = aiCharacter->GetActorUpVector();
 					/*DEBUG_PRINT("name: %s, DELTA: %.5f, HP: %.5f", aiCharacter->GetName().c_str(), result, enemyHp);*/
 					/*SDK::FRotator playerRotator = playerCharacter->K2_GetActorRotation();
 					SDK::FRotator enemyRotator = aiCharacter->K2_GetActorRotation();*/
@@ -370,7 +373,8 @@ struct blackMyth {
 					SDK::FVector2D enemyVector2D = kismetmathlib->Conv_VectorToVector2D(aiCharacter->K2_GetActorLocation());
 					DEBUG_PRINT("player: %lf %lf", playerVector2D.X, playerVector2D.Y);
 					DEBUG_PRINT("enemy: %lf %lf", enemyVector2D.X, enemyVector2D.Y); */
-					aiCharacterMap[aiCharacter->GetName()] = { result, enemyHp, static_cast<float>(location.X), static_cast<float>(location.Y),  static_cast<float>(location.Z) };
+
+					aiCharacterMap[aiCharacter->GetName()] = { result, enemyHp, location, rotator, orientTop };
 				}
 			}
 		}
@@ -438,7 +442,17 @@ struct blackMyth {
 			/*memset(&CommonData::locationBuffer, 0, sizeof(CommonData::locationBuffer));*/
 			CommonData::locationBuffer.event = CommonData::event_t::EVENT_PLAYER_LOCATION;
 			CommonData::locationBuffer.playerLocationInfo.Location = { location.X, location.Y, location.Z };
+
 			CommonData::locationBuffer.playerLocationInfo.Rotator = { rotator.X, rotator.Y, rotator.Z };
+			auto playerController = GameplayStatics->GetPlayerController(param->WorldContextObject, 0);
+			if (playerController) {
+				SDK::APlayerCameraManager* CameraManager = playerController->PlayerCameraManager;
+				if (CameraManager)
+				{
+					CommonData::locationBuffer.playerLocationInfo.Rotator = kismetmathlib->Conv_RotatorToVector(CameraManager->GetCameraRotation());
+				}
+			}
+			//CommonData::locationBuffer.playerLocationInfo.Rotator = { rotator.X, rotator.Y, rotator.Z };
 			CommonData::locationBuffer.playerLocationInfo.OrientTop = { orientTop.X, orientTop.Y, orientTop.Z };
 			
 			CommonData::gameStatus.event = CommonData::event_t::EVENT_GAMEINITED_RESULT;
@@ -743,6 +757,13 @@ public:
 	void exit()
 	{
 		running = false;
+		CommonData::gameStatus.gameInited = 0;
+		this->client->write(&CommonData::gameStatus, sizeof(CommonData::gameStatus));
+		CommonData::gameStatus.dllExitReq = 1;
+		CommonData::gameStatus.event = CommonData::event_t::EVENT_DLL_EXIT_REQ;
+		this->client->write(&CommonData::gameStatus, sizeof(CommonData::gameStatus));
+		gameInstance->deinit();
+		client->exit();
 	}
 
 	static void testRecv(void* arg)
@@ -824,17 +845,17 @@ public:
 			int index = 0;
 			float minDealta = 999999999.0f;
 			float Hp = 0;
-			float X = 0;
-			float Y = 0;
-			float Z = 0;
+			SDK::FVector Location = {0};
+			SDK::FVector Rotator = { 0 };
+			SDK::FVector OrientTop = { 0 };
 
 			for (const auto& pair : gameInstance->aiCharacterMap) {
 				if (pair.second.delta < minDealta) {
 					minDealta = pair.second.delta;
 					Hp = pair.second.Hp;
-					X = pair.second.X;
-					Y = pair.second.Y;
-					Z = pair.second.Z;
+					Location = pair.second.Location;
+					Rotator = pair.second.Rotator;
+					OrientTop = pair.second.OrientTop;
 					
 				}
 					
@@ -842,9 +863,9 @@ public:
 			CommonData::enemyInfo.event = CommonData::event_t::EVENT_ENEMY_MAP;
 			CommonData::enemyInfo.enemyInfo.enemyDelta = minDealta;
 			CommonData::enemyInfo.enemyInfo.playerHp = Hp;
-			CommonData::enemyInfo.enemyInfo.enemyLocation.X = X;
-			CommonData::enemyInfo.enemyInfo.enemyLocation.Y = Y;
-			CommonData::enemyInfo.enemyInfo.enemyLocation.Z = Z;
+			CommonData::enemyInfo.enemyInfo.Location = Location;
+			CommonData::enemyInfo.enemyInfo.Rotator = Rotator;
+			CommonData::enemyInfo.enemyInfo.OrientTop = OrientTop;
 			this->client->write(&CommonData::enemyInfo, sizeof(CommonData::enemyInfo));
 			
 			this->client->write(&CommonData::levelInfoBuffer, sizeof(CommonData::levelInfoBuffer));

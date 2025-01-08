@@ -11,7 +11,7 @@ DWORD WINAPI ThreadProc(LPVOID lpParameter)
     
     dataMgr *mgr = reinterpret_cast<dataMgr*>(lpParameter);
     if (mgr->init()) {
-        printf("init successful!");
+        printf("init successful!\r\n");
         mgr->start();
     }
     else {

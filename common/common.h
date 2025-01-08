@@ -26,6 +26,8 @@ enum class event_t {
     EVENT_GAMEINITED_RESULT = 1 << 5,
     EVENT_SPEAKERINFO = 1 << 6,
     EVENT_LEVELINFO = 1 << 7,
+    EVENT_DLL_EXIT_REQ = 1 << 8,
+    EVENT_SET_GAME_SPEED = 1 << 9,
 };
 
 
@@ -80,7 +82,9 @@ struct enemyInfo_t {
     float playerStamina;
     float playerStaminaRecover;
     float enemyDelta;
-    SDK::FVector enemyLocation;
+    SDK::FVector Location;
+    SDK::FVector Rotator;
+    SDK::FVector OrientTop;
 };
 
 struct playerLocationInfo_t {
@@ -109,6 +113,8 @@ struct gameInfo_t {
         int gameInited;
         labelSpeakerInfo_t speakerInfo;
         levelInfo_t levelInfo;
+        int dllExitReq;
+        float gameSpeed;
     };
     ~gameInfo_t() {
 
@@ -146,4 +152,5 @@ inline static gameInfo_t config;
 inline static gameInfo_t gameStatus;
 inline static gameInfo_t speakerInfo;
 inline static gameInfo_t levelInfoBuffer;
+inline static gameInfo_t gameSpeedBuffer;
 } /* CommonData */

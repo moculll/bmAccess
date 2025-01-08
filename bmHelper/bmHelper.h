@@ -50,7 +50,7 @@ public:
     std::shared_ptr<QAction> quitAction;
    
 
-    bool injected;
+    inline static bool injected;
     bool autoAttention;
     int autoAttentionPeriod;
     int attentionMode;
