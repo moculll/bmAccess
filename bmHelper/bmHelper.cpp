@@ -161,6 +161,72 @@ BOOL loadRemoteDLL(HANDLE hProcess, const char* dllPath)
     return TRUE;
 }
 
+std::array<DirectX::XMFLOAT3, 3> getPlayerAudioInfo()
+{
+    DirectX::XMFLOAT3 newLocation = { static_cast<float>(CommonData::locationBuffer.playerLocationInfo.Location.X * 8), static_cast<float>(CommonData::locationBuffer.playerLocationInfo.Location.Y * 8), static_cast<float>(CommonData::locationBuffer.playerLocationInfo.Location.Z * 8) };
+
+    auto locationMin = bmHelper::mapMgr->getCurrentMapRange()[0];
+    auto locationMax = bmHelper::mapMgr->getCurrentMapRange()[1];
+    DirectX::XMFLOAT3 mapMinRange = { static_cast<float>(locationMin.X), static_cast<float>(locationMin.Y), static_cast<float>(locationMin.Z) };
+    DirectX::XMFLOAT3 mapMaxRange = { static_cast<float>(locationMax.X), static_cast<float>(locationMax.Y), static_cast<float>(locationMax.Z) };
+    auto newLocationForAudio = MGameAudio::posGame2Audio<DirectX::XMFLOAT3>(newLocation, mapMinRange, mapMaxRange);
+    auto rotatorNormalized = CommonData::locationBuffer.playerLocationInfo.Rotator.GetNormalized();
+    auto orientTopNormalized = CommonData::locationBuffer.playerLocationInfo.OrientTop.GetNormalized();
+    DirectX::XMFLOAT3 newOrientFront = { static_cast<float>(rotatorNormalized.X), static_cast<float>(rotatorNormalized.Y), static_cast<float>(rotatorNormalized.Z) };
+    DirectX::XMFLOAT3 newOrientTop = { static_cast<float>(orientTopNormalized.X), static_cast<float>(orientTopNormalized.Y), static_cast<float>(orientTopNormalized.Z) };
+    return { newLocationForAudio, newOrientFront, newOrientTop };
+}
+
+std::array<DirectX::XMFLOAT3, 3> getEnemyAudioInfo()
+{
+    DirectX::XMFLOAT3 newLocation = { static_cast<float>(CommonData::enemyInfo.enemyInfo.Location.X * 8), static_cast<float>(CommonData::enemyInfo.enemyInfo.Location.Y * 8), static_cast<float>(CommonData::enemyInfo.enemyInfo.Location.Z * 8) };
+
+    auto locationMin = bmHelper::mapMgr->getCurrentMapRange()[0];
+    auto locationMax = bmHelper::mapMgr->getCurrentMapRange()[1];
+    DirectX::XMFLOAT3 mapMinRange = { static_cast<float>(locationMin.X), static_cast<float>(locationMin.Y), static_cast<float>(locationMin.Z) };
+    DirectX::XMFLOAT3 mapMaxRange = { static_cast<float>(locationMax.X), static_cast<float>(locationMax.Y), static_cast<float>(locationMax.Z) };
+    auto newLocationForAudio = MGameAudio::posGame2Audio<DirectX::XMFLOAT3>(newLocation, mapMinRange, mapMaxRange);
+    auto rotatorNormalized = CommonData::enemyInfo.enemyInfo.Rotator.GetNormalized();
+    auto orientTopNormalized = CommonData::enemyInfo.enemyInfo.OrientTop.GetNormalized();
+    DirectX::XMFLOAT3 newOrientFront = { static_cast<float>(rotatorNormalized.X), static_cast<float>(rotatorNormalized.Y), static_cast<float>(rotatorNormalized.Z) };
+    DirectX::XMFLOAT3 newOrientTop = { static_cast<float>(orientTopNormalized.X), static_cast<float>(orientTopNormalized.Y), static_cast<float>(orientTopNormalized.Z) };
+    return { newLocationForAudio, newOrientFront, newOrientTop };
+}
+
+DirectX::XMFLOAT3 CalculateFacingOrientFront(
+    const DirectX::XMFLOAT3& characterPosition,
+    const DirectX::XMFLOAT3& targetPosition)
+{
+    DirectX::XMFLOAT3 direction = {
+        targetPosition.x - characterPosition.x,
+        targetPosition.y - characterPosition.y,
+        targetPosition.z - characterPosition.z
+    };
+
+    DirectX::XMVECTOR dirVector = DirectX::XMLoadFloat3(&direction);
+    dirVector = DirectX::XMVector3Normalize(dirVector);
+
+    DirectX::XMFLOAT3 orientFront;
+    DirectX::XMStoreFloat3(&orientFront, dirVector);
+    return orientFront;
+}
+std::array<DirectX::XMFLOAT3, 3> getMapAudioInfo()
+{
+    auto unit = bmHelper::mapMgr->getUnit<BmMapMgr::PointDirection::CUR>();
+    auto playerInfo = getPlayerAudioInfo();
+
+    DirectX::XMFLOAT3 newLocation = { static_cast<float>(unit->point.X * 8), static_cast<float>(unit->point.Y * 8), static_cast<float>(unit->point.Z * 8) };
+
+    auto locationMin = bmHelper::mapMgr->getCurrentMapRange()[0];
+    auto locationMax = bmHelper::mapMgr->getCurrentMapRange()[1];
+    DirectX::XMFLOAT3 mapMinRange = { static_cast<float>(locationMin.X), static_cast<float>(locationMin.Y), static_cast<float>(locationMin.Z) };
+    DirectX::XMFLOAT3 mapMaxRange = { static_cast<float>(locationMax.X), static_cast<float>(locationMax.Y), static_cast<float>(locationMax.Z) };
+    DirectX::XMFLOAT3 newLocationForAudio = MGameAudio::posGame2Audio<DirectX::XMFLOAT3>(newLocation, mapMinRange, mapMaxRange);
+    DirectX::XMFLOAT3 newOrientFront = CalculateFacingOrientFront(playerInfo[0], newLocationForAudio);
+
+    return { newLocationForAudio, newOrientFront, playerInfo[2] };
+}
+
 void testRecv(void* arg)
 {
     
@@ -173,20 +239,10 @@ void testRecv(void* arg)
         memcpy(&CommonData::locationBuffer, MocIPC::getArg<CommonData::gameInfo_t*>(arg), sizeof(CommonData::gameInfo_t));
         if((bmHelper::mapMgr->getCurrentMapRange().empty()))
             return;
-        DirectX::XMFLOAT3 newLocation = { static_cast<float>(CommonData::locationBuffer.playerLocationInfo.Location.X * 8), static_cast<float>(CommonData::locationBuffer.playerLocationInfo.Location.Y * 8), static_cast<float>(CommonData::locationBuffer.playerLocationInfo.Location.Z * 8) };
-        
-        
-        auto locationMin = bmHelper::mapMgr->getCurrentMapRange()[0];
-        auto locationMax = bmHelper::mapMgr->getCurrentMapRange()[1];
-        DirectX::XMFLOAT3 mapMinRange = { static_cast<float>(locationMin.X), static_cast<float>(locationMin.Y), static_cast<float>(locationMin.Z) };
-        DirectX::XMFLOAT3 mapMaxRange = { static_cast<float>(locationMax.X), static_cast<float>(locationMax.Y), static_cast<float>(locationMax.Z) };
-        DirectX::XMFLOAT3 newLocationForAudio = MGameAudio::posGame2Audio<DirectX::XMFLOAT3>(newLocation, mapMinRange, mapMaxRange);
-        CommonData::locationBuffer.playerLocationInfo.Rotator.Normalize();
-        CommonData::locationBuffer.playerLocationInfo.OrientTop.Normalize();
-        DirectX::XMFLOAT3 newOrientFront = { static_cast<float>(CommonData::locationBuffer.playerLocationInfo.Rotator.X), static_cast<float>(CommonData::locationBuffer.playerLocationInfo.Rotator.Y), static_cast<float>(CommonData::locationBuffer.playerLocationInfo.Rotator.Z) };
-        DirectX::XMFLOAT3 newOrientTop = { static_cast<float>(CommonData::locationBuffer.playerLocationInfo.OrientTop.X), static_cast<float>(CommonData::locationBuffer.playerLocationInfo.OrientTop.Y), static_cast<float>(CommonData::locationBuffer.playerLocationInfo.OrientTop.Z) };
-        spdlog::info("[Listener]: X: {}, Y: {}, Z: {}", newLocationForAudio.x, newLocationForAudio.y, newLocationForAudio.z);
-        MGameAudio::updatePosition<MGameAudio::UpdatePositionParam::LISTENER>("closestEnemy", newLocationForAudio, newOrientFront, newOrientTop);
+        auto audioInfo = getPlayerAudioInfo();
+        spdlog::info("[Listener]: X: {}, Y: {}, Z: {}", audioInfo[0].x, audioInfo[0].y, audioInfo[0].z);
+        MGameAudio::updatePosition<MGameAudio::UpdatePositionParam::LISTENER>("closestEnemy", audioInfo[0], audioInfo[1], audioInfo[2]);
+        MGameAudio::updatePosition<MGameAudio::UpdatePositionParam::LISTENER>("mapTarget", audioInfo[0], audioInfo[1], audioInfo[2]);
     }
     else if (MocIPC::getArg<CommonData::gameInfo_t*>(arg)->event & CommonData::event_t::EVENT_ENEMY_MAP) {
         
@@ -195,18 +251,9 @@ void testRecv(void* arg)
             spdlog::info("enemy: {:.5f}", CommonData::enemyInfo.enemyInfo.playerHp);
         if(bmHelper::mapMgr->getCurrentMapRange().empty())
             return;
-        DirectX::XMFLOAT3 newLocation = { static_cast<float>(CommonData::enemyInfo.enemyInfo.Location.X * 8), static_cast<float>(CommonData::enemyInfo.enemyInfo.Location.Y * 8), static_cast<float>(CommonData::enemyInfo.enemyInfo.Location.Z * 8) };
-        auto locationMin = bmHelper::mapMgr->getCurrentMapRange()[0];
-        auto locationMax = bmHelper::mapMgr->getCurrentMapRange()[1];
-        DirectX::XMFLOAT3 mapMinRange = { static_cast<float>(locationMin.X), static_cast<float>(locationMin.Y), static_cast<float>(locationMin.Z) };
-        DirectX::XMFLOAT3 mapMaxRange = { static_cast<float>(locationMax.X), static_cast<float>(locationMax.Y), static_cast<float>(locationMax.Z) };
-        DirectX::XMFLOAT3 newLocationForAudio = MGameAudio::posGame2Audio<DirectX::XMFLOAT3>(newLocation, mapMinRange, mapMaxRange);
-        CommonData::enemyInfo.enemyInfo.Rotator.Normalize();
-        CommonData::enemyInfo.enemyInfo.OrientTop.Normalize();
-        DirectX::XMFLOAT3 newOrientFront = { static_cast<float>(CommonData::enemyInfo.enemyInfo.Rotator.X), static_cast<float>(CommonData::enemyInfo.enemyInfo.Rotator.Y), static_cast<float>(CommonData::enemyInfo.enemyInfo.Rotator.Z) };
-        DirectX::XMFLOAT3 newOrientTop = { static_cast<float>(CommonData::enemyInfo.enemyInfo.OrientTop.X), static_cast<float>(CommonData::enemyInfo.enemyInfo.OrientTop.Y), static_cast<float>(CommonData::enemyInfo.enemyInfo.OrientTop.Z) };
-        spdlog::info("[Emitter]: X: {}, Y: {}, Z: {}", newLocationForAudio.x, newLocationForAudio.y, newLocationForAudio.z);
-        MGameAudio::updatePosition<MGameAudio::UpdatePositionParam::EMITTER>("closestEnemy", newLocationForAudio, newOrientFront, newOrientTop);
+        auto audioInfo = getEnemyAudioInfo();
+        spdlog::info("[Emitter]: X: {}, Y: {}, Z: {}", audioInfo[0].x, audioInfo[0].y, audioInfo[0].z);
+        MGameAudio::updatePosition<MGameAudio::UpdatePositionParam::EMITTER>("closestEnemy", audioInfo[0], audioInfo[1], audioInfo[2]);
     }
     else if (MocIPC::getArg<CommonData::gameInfo_t*>(arg)->event & CommonData::event_t::EVENT_GAMEINITED_RESULT) {
         memcpy(&CommonData::gameStatus, MocIPC::getArg<CommonData::gameInfo_t*>(arg), sizeof(CommonData::gameInfo_t));
@@ -375,6 +422,7 @@ void bmHelper::importantInfoThread()
     }
 
 }
+
 
 
 bmHelper::bmHelper(QWidget *parent)
@@ -684,18 +732,39 @@ bmHelper::bmHelper(QWidget *parent)
 
     mapMgr = std::make_shared<BmMapMgr>();
     mapMgr->init("bmmap.json");
-    
+    bool result = mapMgr->updateCurrentMap(30, 75001, 48001, -40000);
+    spdlog::info("update map result: {}", result ? 1 : 0);
     /* MGameAudio Initialization can't be called from qt thread */
-    static std::thread testThread = std::thread([] () {
+    auto mGameAudioInitWork = std::async(std::launch::async, []() {
         MGameAudio::init();
         MGameAudio::createNewVoice("closestEnemy", "cloestEnemy_01.wav");
-
+        MGameAudio::createNewVoice("mapTarget", "cloestEnemy_01.wav");
     });
+    mGameAudioInitWork.get();
     
-    keyMgr->bindKeys({ VK_F10 }, std::function<void()>([&]() {
+
+    keyMgr->bindKeys({ '0' }, std::function<void()>([&]() {
         MGameAudio::playAudio("closestEnemy", true);
     }));
-    testThread.detach();
+
+    keyMgr->bindKeys({ '9' }, std::function<void()>([&]() {
+        MGameAudio::playAudio("mapTarget", true);
+    }));
+
+    keyMgr->bindKeys({ '6' }, std::function<void()>([&]() {
+        auto unit = mapMgr->getUnit<BmMapMgr::PointDirection::NEXT>();
+        auto mapAudioInfo = getPlayerAudioInfo();
+        spdlog::info("[0] {} {} {}, [1] {} {} {}, [2] {} {} {}", mapAudioInfo[0].x, mapAudioInfo[0].y, mapAudioInfo[0].z, mapAudioInfo[1].x, mapAudioInfo[1].y, mapAudioInfo[1].z, mapAudioInfo[2].x, mapAudioInfo[2].y, mapAudioInfo[2].z);
+        MGameAudio::updatePosition<MGameAudio::UpdatePositionParam::EMITTER>("mapTarget", mapAudioInfo[0], mapAudioInfo[1], mapAudioInfo[2]);
+        speaker->playInternal(QString("target: %1").arg(unit->pointName.c_str()));
+    }));
+
+    keyMgr->bindKeys({ '7' }, std::function<void()>([&]() {
+        auto unit = mapMgr->getUnit<BmMapMgr::PointDirection::PREV>();
+        auto mapAudioInfo = getMapAudioInfo();
+        MGameAudio::updatePosition<MGameAudio::UpdatePositionParam::EMITTER>("mapTarget", mapAudioInfo[0], mapAudioInfo[1], mapAudioInfo[2]);
+        speaker->playInternal(QString("target: %1").arg(unit->pointName.c_str()));
+    }));
     /*bool result = mapMgr->updateCurrentMap(30, 75001, 48001, -40000);
     spdlog::info("update map result: %d", result ? 1 : 0);
 

@@ -44,7 +44,7 @@ public:
 
         DoubleListContainer<T> &operator++()
         {
-            if (++curIndex >= container.size())
+            if (++curIndex > container.size() - 1)
                 curIndex = 0;
 
             return *this;
@@ -52,29 +52,29 @@ public:
 
         DoubleListContainer<T> &operator--()
         {
-            if(--curIndex > 0)
-                curIndex = static_cast<int>(container.size());
+            if(--curIndex < 0)
+                curIndex = static_cast<int>(container.size() - 1);
  
             return *this;
         }
 
         DoubleListContainer<T> operator++(int)
         {
-            if (++curIndex >= container.size())
+            if (++curIndex > container.size() - 1)
                 curIndex = 0;
             return *this;
         }
 
         DoubleListContainer<T> operator--(int)
         {
-            if(--curIndex > 0)
-                curIndex = static_cast<int>(container.size());
+            if(--curIndex < 0)
+                curIndex = static_cast<int>(container.size() - 1);
             return *this;
         }
     };
 
     enum class PointDirection {
-        PRIV,
+        PREV,
         NEXT,
         CUR,
     };

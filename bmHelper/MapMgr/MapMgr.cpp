@@ -164,7 +164,7 @@ BmMapMgr::levelUnit_t *BmMapMgr::getUnit<BmMapMgr::PointDirection::NEXT>()
 }
 
 template <>
-BmMapMgr::levelUnit_t *BmMapMgr::getUnit<BmMapMgr::PointDirection::PRIV>()
+BmMapMgr::levelUnit_t *BmMapMgr::getUnit<BmMapMgr::PointDirection::PREV>()
 {
     --currentLevelContainer;
     return currentLevelContainer.get();
