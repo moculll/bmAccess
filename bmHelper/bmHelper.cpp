@@ -554,7 +554,7 @@ bmHelper::bmHelper(QWidget *parent)
     keyMgr->bindKeys({ VK_CONTROL, VK_SHIFT, 'D' }, std::function([&]() {
         if (!speaker || !kvMgr)
             return;
-        speaker->playInternal(kvMgr->transfer(kvMgr->getKV(language, "helperTips"), { "control", "T", "control", "方向键", "大小写切换键", "F1", "F2", "F3", "F4", "control", "西", "control", "V", "Z", "X", "西", "control", "T" }));
+        speaker->playInternal(kvMgr->transfer(kvMgr->getKV(language, "helperTips"), { "control", "T", "control", "F1", "F2", "F3", "F4", "control", "西", "control", "V", "Z", "X", "西", "control", "T" }));
     }));
 
     
@@ -779,8 +779,26 @@ bmHelper::bmHelper(QWidget *parent)
         MGameAudio::runTestCase();
     });
     newthread.detach();*/
-    
-    
+    keyMgr->bindKeys({ VK_UP }, std::function<void()>([&]() {
+        spdlog::info("mapName: {}", mapMgr->menuUp());
+        
+    }));
+    keyMgr->bindKeys({ VK_DOWN }, std::function<void()>([&]() {
+        spdlog::info("mapName: {}", mapMgr->menuDown());
+
+    }));
+    keyMgr->bindKeys({ VK_LEFT }, std::function<void()>([&]() {
+        auto& unit = mapMgr->menuLeft();
+
+        spdlog::info("pointName: {}", unit.pointName);
+
+    }));
+    keyMgr->bindKeys({ VK_RIGHT }, std::function<void()>([&]() {
+        auto& unit = mapMgr->menuRight();
+
+        spdlog::info("pointName: {}", unit.pointName);
+
+    }));
 }
 
 

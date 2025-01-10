@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <memory>
 #include <list>
 #include "json/json.hpp"
@@ -14,11 +14,44 @@ public:
         /* this will never cross the max index of the container */
         int curIndex;
 
+        static_assert(std::is_move_constructible<T>::value, "T must be move constructible");
+
         DoubleListContainer() : curIndex(0) {};
-        DoubleListContainer<T>& operator=(const DoubleListContainer<T>&) = delete;
-        DoubleListContainer(const DoubleListContainer<T>&) = delete;
-        DoubleListContainer(DoubleListContainer<T>&&) = delete;
-        DoubleListContainer<T>& operator=(DoubleListContainer<T>&&) = delete;
+        DoubleListContainer<T>& operator=(const DoubleListContainer<T>&src) noexcept
+        {
+            if (&src != this) {
+                container = src.container;
+                curIndex = src.curIndex;
+                if (src.curIndex < 0 || src.curIndex >= src.container.size())
+                    curIndex = 0;
+            }
+            return *this;
+        }
+        DoubleListContainer(const DoubleListContainer<T>& src) noexcept
+        {
+            container = src.container;
+            curIndex = src.curIndex;
+            if (src.curIndex < 0 || src.curIndex >= src.container.size())
+                curIndex = 0;
+
+        }
+        DoubleListContainer(DoubleListContainer<T>&& src) noexcept
+            : container(std::move(src.container)), curIndex(src.curIndex)
+        {
+            if (src.curIndex < 0 || src.curIndex >= src.container.size())
+                curIndex = 0;
+        }
+
+        DoubleListContainer<T>& operator=(DoubleListContainer<T>&& src) noexcept
+        {
+            if (this != &src) {
+                container = std::move(src.container);
+                curIndex = src.curIndex;
+                if(src.curIndex < 0 || src.curIndex >= src.container.size())
+                    curIndex = 0;
+            }
+            return *this;
+        }
         
 
         void emplace_back(const T &src)
@@ -99,6 +132,31 @@ public:
     template <PointDirection>
     levelUnit_t *getUnit();
     
+    std::string& menuUp()
+    {
+        return menuContainer.up();
+    }
+
+    std::string& menuDown()
+    {
+
+        return menuContainer.down();
+    }
+
+    levelUnit_t& menuLeft()
+    {
+
+
+        return menuContainer.left();
+
+    }
+
+    levelUnit_t& menuRight()
+    {
+
+        return menuContainer.right();
+    }
+
 private:
     std::shared_ptr<nlohmann::json> mapJsonData;
 
@@ -107,5 +165,63 @@ private:
     int currentMap;
     std::string currentLevelName;
     DoubleListContainer<levelUnit_t> currentLevelContainer;
+
+
+    struct MenuContainer {
+        std::map<std::string, DoubleListContainer<levelUnit_t>> levelContainer;
+        DoubleListContainer<std::string> mapContainer;
+
+        MenuContainer() {}
+        MenuContainer(std::map<std::string, DoubleListContainer<levelUnit_t>> &srcLevelContainer, DoubleListContainer<std::string> &srcMapContainer) : levelContainer(srcLevelContainer), mapContainer(srcMapContainer) {}
+
+        MenuContainer& operator=(MenuContainer &src) noexcept
+        {
+            if (this != &src) {
+                levelContainer = src.levelContainer;
+                mapContainer = src.mapContainer;
+            }
+            
+            return *this;
+        }
+
+        MenuContainer& operator=(MenuContainer&& src) noexcept
+        {
+            if (this != &src) {
+                levelContainer = std::move(src.levelContainer);
+                mapContainer = std::move(src.mapContainer);
+            }
+            return *this;
+        }
+
+        std::string &up()
+        {
+            --mapContainer;
+            return *mapContainer.get();
+        }
+
+        std::string &down()
+        {
+            ++mapContainer;
+            return *mapContainer.get();
+        }
+
+        levelUnit_t& left()
+        {
+            --levelContainer[*mapContainer.get()];
+
+            return *levelContainer[*mapContainer.get()].get();
+
+        }
+
+        levelUnit_t& right()
+        {
+            ++levelContainer[*mapContainer.get()];
+            return *levelContainer[*mapContainer.get()].get();
+        }
+
+    };
+
+    MenuContainer menuContainer;
+
 
 };

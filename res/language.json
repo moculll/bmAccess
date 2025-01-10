@@ -1,7 +1,7 @@
 {
   "Chinese": {
     "initTips": "初始化环境成功, 按下 %%1 + %%2 + %%3 阅读使用说明, %%4 + %%5 退出程序, %%6,切换语言",
-    "helperTips": "退出程序请按%%1+%%2, %%3加%%4控制音量和语速, %%5播报敌人信息,%%6,开启自动提醒,%%7,切换提醒模式,%%8,缩短提醒间隔,%%9,增加提醒间隔, %%10加%%11,保存角色位置, %%12加%%13,传送到保存的位置, %%14,血量信息,%%15,蓝量信息,%%16,异常状态信息, 退出程序请按%%17+%%18",
+    "helperTips": "退出程序请按%%1+%%2, %%3加方向键控制音量和语速, 大小写切换键播报敌人信息,%%4,开启自动提醒,%%5,切换提醒模式,%%6,缩短提醒间隔,%%7,增加提醒间隔, %%8加%%9,保存角色位置, %%10加%%11,传送到保存的位置, %%12,血量信息,%%13,蓝量信息,%%14,异常状态信息, 退出程序请按%%15+%%16",
     "savePosTips":"已保存当前位置",
     "teleportTips":"已传送到保存的位置",
     "tpNotInGameTips":"未进入游戏世界，无法传送",
@@ -30,7 +30,7 @@
   },
   "English": {
     "initTips": "Initialized successful, press %%1 + %%2 + %%3 to read user guide, %%4 + %%5 exit the helper, press %%6 to switch language",
-    "helperTips": "press %%1+%%2 to exit program , %%3+%%4 to control volume and speed, %%5 to get enemy info,%%6,start auto remind,%%7,switch remind mode,%%8,decrease remind period,%%9,increase remind period, %%10+%%11,save player position, %%12+%%13,teleport to saved position, %%14,HP info,%%15,MP info,%%16,buff info, perss %%17+%%18 to exit the helper",
+    "helperTips": "press %%1+%%2 to exit program , %%3+arrow to control volume and speed, capslock to get enemy info,%%4,start auto remind,%%5,switch remind mode,%%6,decrease remind period,%%7,increase remind period, %%8+%%9,save player position, %%10+%%11,teleport to saved position, %%12,HP info,%%13,MP info,%%14,buff info, perss %%15+%%16 to exit the helper",
     "savePosTips":"already saved player's position",
     "teleportTips":"player teleported",
     "tpNotInGameTips":"you didn't start the game, can not teleport",

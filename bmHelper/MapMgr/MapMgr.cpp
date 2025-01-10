@@ -2,7 +2,7 @@
 
 #include <fstream>
 
-#define DEBUG_PRINT_ENABLE 0
+#define DEBUG_PRINT_ENABLE 1
 #if DEBUG_PRINT_ENABLE
 #define DEBUG_PRINT(fmt, ...) \
             do { \
@@ -39,7 +39,9 @@ bool BmMapMgr::init(std::string jsonPath)
 
     DEBUG_PRINT("jsonFile loaded successful.");
 
+    
     for (const auto& mapUnit : *mapJsonData.get()) {
+        DoubleListContainer<levelUnit_t> singleLevel;
         int id = mapUnit["id"];
         int map = mapUnit["map"];
         std::string code = mapUnit["code"];
@@ -73,13 +75,33 @@ bool BmMapMgr::init(std::string jsonPath)
 
             pointVector_t pointVec = {x, y, z};
             levelUnit_t levelUnit = {std::move(pointName), std::move(pointVec)};
+            singleLevel.emplace_back(levelUnit);
+
 
             currentLevelContainer.emplace_back(std::move(levelUnit));
             
         }
+        menuContainer.mapContainer.emplace_back(name);
+        menuContainer.levelContainer.try_emplace(name, std::move(singleLevel));
 
         DEBUG_PRINT("----------------------");
     }
+
+    for (auto it : menuContainer.mapContainer.container) {
+        DEBUG_PRINT("[menuMaps]: %s", it.c_str());
+    }
+
+    for (auto it = menuContainer.levelContainer.begin(); it != menuContainer.levelContainer.end(); ++it) {
+
+        DEBUG_PRINT("--------------[menuLevel]: %s--------------", it->first.c_str());
+        for (auto itd : it->second.container) {
+            DEBUG_PRINT("[menuLevel]: point: %s", itd.pointName.c_str());
+        }
+        DEBUG_PRINT("--------------[menuLevel]: %s--------------", it->first.c_str());
+
+
+    }
+
 
     return true;
 
