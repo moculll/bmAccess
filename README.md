@@ -8,12 +8,12 @@
 - ### Abnormal State Notify
 - ### Key Control
 - ### Teleport
-
-
-## Working On
 - ### Map/Items Guide
 - ### Audio Remind System
+
+## Working On
 - ### All Necessary TextBlocks' Read
-- ### Refactor bmHelper and common's codes
+- ### Speech to Control system
 
 ### Looking Forward to your contribute!
+### Thanks to https://github.com/jaskang/wukong-minimap.git , I have stolen the map json from his repo
